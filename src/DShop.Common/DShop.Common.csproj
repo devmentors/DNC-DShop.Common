@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="4.6.1" />
+    <PackageReference Include="Autofac" Version="4.6.2" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.0.0" />
@@ -21,11 +21,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.4.4" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="RawRabbit" Version="2.0.0-rc1" />
-    <PackageReference Include="RawRabbit.DependencyInjection.ServiceCollection" Version="2.0.0-rc1" />
-    <PackageReference Include="RawRabbit.Enrichers.Polly" Version="2.0.0-rc1" />
-    <PackageReference Include="RawRabbit.Operations.Publish" Version="2.0.0-rc1" />
-    <PackageReference Include="RawRabbit.Operations.Subscribe" Version="2.0.0-rc1" />
+    <PackageReference Include="RawRabbit" Version="2.0.0-rc3" />
+    <PackageReference Include="RawRabbit.DependencyInjection.ServiceCollection" Version="2.0.0-rc3" />
+    <PackageReference Include="RawRabbit.Enrichers.Polly" Version="2.0.0-rc3" />
+    <PackageReference Include="RawRabbit.Operations.Publish" Version="2.0.0-rc3" />
+    <PackageReference Include="RawRabbit.Operations.Subscribe" Version="2.0.0-rc3" />
     <PackageReference Include="Serilog" Version="2.5.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.0" />

@@ -38,9 +38,9 @@ namespace DShop.Common.Authentication
         public static long ToTimestamp(this DateTime dateTime)
         {
             var centuryBegin = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            var now = dateTime.Subtract(new TimeSpan(centuryBegin.Ticks));
+            var expectedDate = dateTime.Subtract(new TimeSpan(centuryBegin.Ticks));
 
-            return now.Ticks / 10000;
+            return expectedDate.Ticks / 10000;
         }
     }
 }
