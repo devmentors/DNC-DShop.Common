@@ -1,4 +1,5 @@
 using Autofac;
+using DShop.Common.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -13,9 +14,7 @@ namespace DShop.Common.Mongo
             builder.Register(context =>
             {
                 var configuration = context.Resolve<IConfiguration>();
-                var section = configuration.GetSection("mongo");
-                var options = new MongoDbOptions();
-                section.Bind(options);
+                var options = configuration.GetOptions<MongoDbOptions>("mongo");
 
                 return options;
             }).SingleInstance();
