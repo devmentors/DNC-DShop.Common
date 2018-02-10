@@ -43,10 +43,11 @@ namespace DShop.Common.Builders
             var containerBuilder = new ContainerBuilder();
 
             if (services != null)
+            {
                 containerBuilder.Populate(services);
+            }               
 
             containerBuilder.Update(_container);
-
             return new AutofacServiceProvider(_container);
         }
 
@@ -65,7 +66,8 @@ namespace DShop.Common.Builders
 
         IBusServiceBuilder IDatabaseServiceBuilder.WithMongoDb(string settingsSectionName)
         {
-            _containerBuilder.AddMongoDB();
+            var options = _configuration.GetOptions<MongoDbOptions>(settingsSectionName);
+            _containerBuilder.AddMongoDB(options);
             return this;
         }
 
