@@ -2,11 +2,11 @@ using Autofac;
 
 namespace DShop.Common.IoC
 {
-    internal class DependencyResolver : IDependencyResolver
+    internal class AutofacDependencyResolver : IDependencyResolver
     {
         private readonly ILifetimeScope _lifetimeScope;
 
-        public DependencyResolver(ILifetimeScope lifetimeScope)
+        public AutofacDependencyResolver(ILifetimeScope lifetimeScope)
         {
             _lifetimeScope = lifetimeScope;
         }

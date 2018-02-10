@@ -5,6 +5,6 @@ namespace DShop.Common.Builders
 {
     public interface IIoCServiceBuilder
     {
-        IDatabaseServiceBuilder WithRegistration(Action<ContainerBuilder> registerDependencies);
+        IDatabaseServiceBuilder WithAutofac(Action<ContainerBuilder> registerDependencies);
     }
 }

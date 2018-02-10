@@ -4,7 +4,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using DShop.Common.Bus;
 using DShop.Common.IoC;
-using DShop.Common.Mongo;
+using DShop.Common.Databases.Mongo;
 using DShop.Common.Options;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -57,10 +57,10 @@ namespace DShop.Common.Builders
             return this;
         }
 
-        IDatabaseServiceBuilder IIoCServiceBuilder.WithRegistration(Action<ContainerBuilder> registerDependencies)
+        IDatabaseServiceBuilder IIoCServiceBuilder.WithAutofac(Action<ContainerBuilder> registerDependencies)
         {
             registerDependencies(_containerBuilder);
-            _containerBuilder.RegisterType<DependencyResolver>().As<IDependencyResolver>();
+            _containerBuilder.RegisterType<AutofacDependencyResolver>().As<IDependencyResolver>();
             return this;
         }
 

@@ -3,7 +3,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace DShop.Common.Bus
 {
-    internal class ServiceBusSerializer : RawRabbit.Serialization.JsonSerializer
+    internal sealed class ServiceBusSerializer : RawRabbit.Serialization.JsonSerializer
     {
         public ServiceBusSerializer() : base(new Newtonsoft.Json.JsonSerializer
         {

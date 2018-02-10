@@ -1,4 +1,4 @@
-namespace DShop.Common.Mongo
+namespace DShop.Common.Databases.Mongo
 {
     public class MongoDbOptions
     {

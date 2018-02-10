@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
-namespace DShop.Common.Mongo
+namespace DShop.Common.Databases.Mongo
 {
     public static class Extensions
     {
