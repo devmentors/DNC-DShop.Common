@@ -15,6 +15,9 @@ namespace DShop.Common.Databases.Mongo
 			Collection = database.GetCollection<TEntity>(collectionName);
 		}
 
+        public async Task<TEntity> GetByIdAsync(Guid id)
+            => await Collection.Find(e => e.Id == id).SingleOrDefaultAsync();
+
 		public async Task CreateAsync(TEntity entity)
 			=> await Collection.InsertOneAsync(entity);
 

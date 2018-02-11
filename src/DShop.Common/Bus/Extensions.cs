@@ -10,8 +10,7 @@ using RawRabbit.Serialization;
 namespace DShop.Common.Bus
 {
     internal static class Extensions
-    {
-        
+    {        
         internal static void RegisterServiceBus(this ContainerBuilder containerBuilder, ServiceBusOptions options)
         {
             containerBuilder.RegisterInstance(options).SingleInstance();
