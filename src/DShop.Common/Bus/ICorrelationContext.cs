@@ -1,10 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DShop.Common.Bus
 {
-    interface ICorrelationContext
+    public interface ICorrelationContext
     {
+        Guid Id { get; }
+        Guid UserId { get; }
+        Guid ResourceId { get; }
+        string Name { get; }
+        string Origin { get; }
+        string Resource { get; }
+        string Culture { get; }
+        DateTime CreatedAt { get; }
     }
 }

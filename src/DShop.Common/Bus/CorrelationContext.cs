@@ -14,7 +14,7 @@ namespace DShop.Common.Bus
         public string Culture { get; }
         public DateTime CreatedAt { get; }
 
-        protected CorrelationContext()
+        public CorrelationContext()
         {
         }
 

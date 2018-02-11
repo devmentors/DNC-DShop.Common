@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using Autofac;
-using DShop.Common.Bus;
 using RawRabbit.Configuration;
 using RawRabbit.DependencyInjection.Autofac;
+using RawRabbit.Enrichers.MessageContext;
 using RawRabbit.Instantiation;
 using RawRabbit.Serialization;
 
-namespace DShop.Common.Builders
+namespace DShop.Common.Bus
 {
     internal static class Extensions
     {
@@ -33,7 +33,10 @@ namespace DShop.Common.Builders
                     },
                     RequestTimeout = new TimeSpan(0, 10, 0)
                 },
-                DependencyInjection = ioc => ioc.AddSingleton<ISerializer, ServiceBusSerializer>()
+                DependencyInjection = ioc => ioc.AddSingleton<ISerializer, ServiceBusSerializer>(),
+                Plugins = p => p
+                    .UseMessageContext<CorrelationContext>()
+                    .UseContextForwarding()
             });
         }
     }

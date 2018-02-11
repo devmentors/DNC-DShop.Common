@@ -6,7 +6,7 @@ namespace DShop.Common.Bus
 {
     public interface IPublishBus
     {
-        Task PublishCommandAsync<TCommand>(TCommand command) where TCommand : class, ICommand;
+        Task PublishCommandAsync<TCommand>(TCommand command, ICorrelationContext context) where TCommand : class, ICommand;
         Task PublishEventAsync<TEvent>(TEvent @event) where TEvent : class, IEvent;
     }
 }
