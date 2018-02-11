@@ -25,6 +25,8 @@
     <PackageReference Include="RawRabbit" Version="2.0.0-rc3" />
     <PackageReference Include="RawRabbit.DependencyInjection.ServiceCollection" Version="2.0.0-rc3" />
     <PackageReference Include="RawRabbit.Enrichers.Polly" Version="2.0.0-rc3" />
+    <PackageReference Include="RawRabbit.Enrichers.MessageContext" Version="2.0.0-rc3" />
+    <PackageReference Include="RawRabbit.Enrichers.MessageContext.Subscribe" Version="2.0.0-rc3" />
     <PackageReference Include="RawRabbit.DependencyInjection.Autofac" Version="2.0.0-rc3" />
     <PackageReference Include="RawRabbit.Operations.Publish" Version="2.0.0-rc3" />
     <PackageReference Include="RawRabbit.Operations.Subscribe" Version="2.0.0-rc3" />
