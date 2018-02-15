@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using DShop.Common.IoC;
 using RawRabbit.Enrichers.MessageContext;
 using DShop.Common.Handlers;
+using DShop.Messages.Commands;
+using DShop.Messages.Events;
 
 namespace DShop.Common.Bus
 {
@@ -22,25 +24,32 @@ namespace DShop.Common.Bus
         async Task IPublishBus.PublishCommandAsync<TCommand>(TCommand command, ICorrelationContext context)
             => await _busClient.PublishAsync(command, ctx => ctx.UseMessageContext(context ?? new CorrelationContext()));
 
-
         async Task IPublishBus.PublishEventAsync<TEvent>(TEvent @event)
             => await _busClient.PublishAsync(@event);
 
-        void ISubscribeBus.SubscribeToCommand<TCommand>()
-            => _busClient.SubscribeAsync<TCommand, CorrelationContext>(async (command, ctx) =>
+        public ISubscribeBus SubscribeToCommand<TCommand>() where TCommand : class, ICommand
+        {
+            _busClient.SubscribeAsync<TCommand, CorrelationContext>(async (command, ctx) =>
             {
                 var commandHandler = _dependencyResolver.Resolve<ICommandHandler<TCommand>>();
                 await commandHandler.HandleAsync(command, ctx);
             },
             ctx => ctx.UseSubscribeConfiguration(cfg => cfg.FromDeclaredQueue(q => q.WithName(_serviceBusOptions.QueueName))));
 
+            return this;
+        }
 
-        void ISubscribeBus.SubscribeToEvent<TEvent>()
-            => _busClient.SubscribeAsync<TEvent, CorrelationContext>(async (@event, ctx) =>
+        public ISubscribeBus SubscribeToEvent<TEvent>() where TEvent : class, IEvent
+        {
+            _busClient.SubscribeAsync<TEvent, CorrelationContext>(async (@event, ctx) =>
             {
                 var eventHandler = _dependencyResolver.Resolve<IEventHandler<TEvent>>();
                 await eventHandler.HandleAsync(@event, ctx);
             },
             ctx => ctx.UseSubscribeConfiguration(cfg => cfg.FromDeclaredQueue(q => q.WithName(_serviceBusOptions.QueueName))));
+
+            return this;
+        }
+
     }
 }

@@ -5,7 +5,7 @@ namespace DShop.Common.Bus
 {
     public interface ISubscribeBus
     {
-        void SubscribeToCommand<TCommand>() where TCommand : class, ICommand;
-        void SubscribeToEvent<TEvent>() where TEvent : class, IEvent;
+        ISubscribeBus SubscribeToCommand<TCommand>() where TCommand : class, ICommand;
+        ISubscribeBus SubscribeToEvent<TEvent>() where TEvent : class, IEvent;
     }
 }
