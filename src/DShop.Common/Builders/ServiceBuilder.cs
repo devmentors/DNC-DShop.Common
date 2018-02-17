@@ -67,7 +67,7 @@ namespace DShop.Common.Builders
         IBusServiceBuilder IDatabaseServiceBuilder.WithMongoDb(string settingsSectionName)
         {
             var options = _configuration.GetOptions<MongoDbOptions>(settingsSectionName);
-            _containerBuilder.AddMongoDB(options);
+            _containerBuilder.AddMongoDB();
             return this;
         }
 

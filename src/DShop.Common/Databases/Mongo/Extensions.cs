@@ -9,15 +9,29 @@ namespace DShop.Common.Databases.Mongo
 {
     public static class Extensions
     {
-        public static void AddMongoDB(this ContainerBuilder builder, MongoDbOptions options)
+        public static void AddMongoDB(this ContainerBuilder builder)
         {
-            builder.RegisterInstance(options).SingleInstance();
-
-            builder.RegisterInstance(new MongoClient(options.ConnectionString)).SingleInstance();
-
             builder.Register(context =>
             {
-                var client = context.Resolve<MongoClient>();            
+                var configuration = context.Resolve<IConfiguration>();
+                var section = configuration.GetSection("mongo");
+                var options = new MongoDbOptions();
+                section.Bind(options);
+
+                return options;
+            }).SingleInstance();
+
+            builder.Register(context => 
+            {
+                var options = context.Resolve<MongoDbOptions>();
+
+                return new MongoClient(options.ConnectionString);
+            }).SingleInstance();
+            builder.Register(context =>
+            {
+                var options = context.Resolve<MongoDbOptions>();
+                var client = context.Resolve<MongoClient>();     
+                      
                 return client.GetDatabase(options.Database);
             }).InstancePerLifetimeScope();
 
