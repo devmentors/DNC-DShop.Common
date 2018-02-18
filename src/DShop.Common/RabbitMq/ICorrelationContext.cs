@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DShop.Common.Bus
+namespace DShop.Common.RabbitMq
 {
     public interface ICorrelationContext
     {

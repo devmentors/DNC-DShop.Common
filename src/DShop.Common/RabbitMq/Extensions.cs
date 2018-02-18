@@ -1,0 +1,57 @@
+using System.Reflection;
+using Autofac;
+using DShop.Common.Handlers;
+using DShop.Common.Options;
+using DShop.Common.RabbitMq;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using RawRabbit.Configuration;
+using RawRabbit.Enrichers.MessageContext;
+using RawRabbit.Instantiation;
+
+namespace DShop.Common.RabbitMq
+{
+    public static class Extensions
+    {
+        public static IBusSubscriber UseRabbitMq(this IApplicationBuilder app)
+            => new BusSubscriber(app);
+
+        public static void AddRabbitMq(this ContainerBuilder builder)
+        {
+            builder.Register(context =>
+            {
+                var configuration = context.Resolve<IConfiguration>();
+                var rawRabbitConfiguration = configuration.GetOptions<RawRabbitConfiguration>("rawRabbit");
+                return rawRabbitConfiguration;
+
+            }).SingleInstance();
+
+            var assembly = Assembly.GetCallingAssembly();
+            builder.RegisterAssemblyTypes(assembly)
+                .AsClosedTypesOf(typeof(IEventHandler<>))
+                .InstancePerDependency();
+            builder.RegisterAssemblyTypes(assembly)
+                .AsClosedTypesOf(typeof(ICommandHandler<>))
+                .InstancePerDependency();
+            builder.RegisterType<BusPublisher>().As<IBusPublisher>()
+                .InstancePerDependency();
+
+            ConfigureBus(builder);
+        }
+
+        private static void ConfigureBus(ContainerBuilder builder)
+        {
+            builder.Register<IInstanceFactory>(context =>
+                RawRabbitFactory.CreateInstanceFactory(new RawRabbitOptions
+                {
+                    DependencyInjection = ioc => ioc.AddSingleton(context.Resolve<RawRabbitConfiguration>()),
+                    Plugins = p => p
+                        .UseMessageContext<CorrelationContext>()
+                        .UseContextForwarding()
+
+                })).SingleInstance();
+
+            builder.Register(context => context.Resolve<IInstanceFactory>().Create());
+        }        
+    }
+}
