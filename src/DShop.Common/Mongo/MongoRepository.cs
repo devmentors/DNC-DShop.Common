@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using DShop.Messages.Entities;
 using MongoDB.Driver;
 
-namespace DShop.Common.Databases.Mongo
+namespace DShop.Common.Mongo
 {
-    public abstract class MongoRepository<TEntity> : IRepository<TEntity> where TEntity : IEntity
+    public abstract class MongoRepository<TEntity> : IMongoRepository<TEntity> where TEntity : IEntity
     {
         protected IMongoCollection<TEntity> Collection { get; }
 

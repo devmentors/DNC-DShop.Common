@@ -3,9 +3,9 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using DShop.Messages.Entities;
 
-namespace DShop.Common.Databases
+namespace DShop.Common.Mongo
 {
-    public interface IRepository<TEntity> where TEntity : IEntity
+    public interface IMongoRepository<TEntity> where TEntity : IEntity
     {
          Task<TEntity> GetByIdAsync(Guid id);
          Task CreateAsync(TEntity entity);

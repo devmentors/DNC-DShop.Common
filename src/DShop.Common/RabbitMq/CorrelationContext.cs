@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DShop.Common.Bus
+namespace DShop.Common.RabbitMq
 {
     public class CorrelationContext : ICorrelationContext
     {
@@ -18,7 +18,7 @@ namespace DShop.Common.Bus
         {
         }
 
-        public CorrelationContext(Guid id, Guid userId, Guid resourceId, string name,
+        private CorrelationContext(Guid id, Guid userId, Guid resourceId, string name,
             string origin, string culture, string resource)
         {
             Id = id;

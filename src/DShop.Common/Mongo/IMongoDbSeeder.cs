@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace DShop.Common.Databases.Mongo
+namespace DShop.Common.Mongo
 {
     public interface IMongoDbSeeder
     {

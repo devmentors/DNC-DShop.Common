@@ -1,4 +1,4 @@
-using DShop.Common.Bus;
+using DShop.Common.RabbitMq;
 using DShop.Messages.Events;
 using System.Threading.Tasks;
 
