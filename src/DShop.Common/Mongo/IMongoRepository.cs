@@ -5,7 +5,7 @@ using DShop.Messages.Entities;
 
 namespace DShop.Common.Mongo
 {
-    public interface IMongoRepository<TEntity> where TEntity : IEntity
+    public interface IMongoRepository<TEntity> where TEntity : IIdentifiable
     {
          Task<TEntity> GetByIdAsync(Guid id);
          Task CreateAsync(TEntity entity);
