@@ -27,6 +27,7 @@ namespace DShop.Common.RabbitMq
             }).SingleInstance();
 
             var assembly = Assembly.GetCallingAssembly();
+            builder.RegisterType<BusPublisher>().As<IBusPublisher>();
             builder.RegisterAssemblyTypes(assembly)
                 .AsClosedTypesOf(typeof(IEventHandler<>))
                 .InstancePerDependency();
