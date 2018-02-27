@@ -42,7 +42,7 @@ namespace DShop.Common.Mongo
                 .InstancePerLifetimeScope();
         }
 
-        public static void AddMongoDbRepository<TEntity>(this ContainerBuilder builder, string collectionName) 
+        public static void AddMongoDBRepository<TEntity>(this ContainerBuilder builder, string collectionName) 
             where TEntity : IIdentifiable
             => builder.Register(ctx => new MongoRepository<TEntity>(ctx.Resolve<IMongoDatabase>(), collectionName))
                 .As<IMongoRepository<TEntity>>()
