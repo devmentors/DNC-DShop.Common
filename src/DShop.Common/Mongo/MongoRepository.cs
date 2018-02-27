@@ -8,11 +8,11 @@ using MongoDB.Driver.Linq;
 
 namespace DShop.Common.Mongo
 {
-    public abstract class MongoRepository<TEntity> : IMongoRepository<TEntity> where TEntity : IIdentifiable
+    public class MongoRepository<TEntity> : IMongoRepository<TEntity> where TEntity : IIdentifiable
     {
         protected IMongoCollection<TEntity> Collection { get; }
 
-		protected MongoRepository(IMongoDatabase database, string collectionName)
+		public MongoRepository(IMongoDatabase database, string collectionName)
 		{
 			Collection = database.GetCollection<TEntity>(collectionName);
 		}

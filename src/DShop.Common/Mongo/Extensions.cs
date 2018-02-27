@@ -1,5 +1,6 @@
 using Autofac;
 using DShop.Common.Options;
+using DShop.Messages.Entities;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 
@@ -40,5 +41,11 @@ namespace DShop.Common.Mongo
                 .As<IMongoDbSeeder>()
                 .InstancePerLifetimeScope();
         }
+
+        public static void AddMongoDbRepository<TEntity>(this ContainerBuilder builder, string collectionName) 
+            where TEntity : IIdentifiable
+            => builder.Register(ctx => new MongoRepository<TEntity>(ctx.Resolve<IMongoDatabase>(), collectionName))
+                .As<IMongoRepository<TEntity>>()
+                .InstancePerLifetimeScope();
     }
 }
