@@ -20,7 +20,6 @@ namespace DShop.Common.Authentication
         private readonly JwtOptions _options;
         private readonly SecurityKey _issuerSigningKey;
         private readonly SigningCredentials _signingCredentials;
-        private readonly JwtHeader _jwtHeader;
         private readonly TokenValidationParameters _tokenValidationParameters;
 
         public JwtHandler(JwtOptions options)
@@ -28,7 +27,6 @@ namespace DShop.Common.Authentication
             _options = options;
             _issuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey));
             _signingCredentials = new SigningCredentials(_issuerSigningKey, SecurityAlgorithms.HmacSha256);
-            _jwtHeader = new JwtHeader(_signingCredentials);
             _tokenValidationParameters = new TokenValidationParameters
             {
                 IssuerSigningKey = _issuerSigningKey,
