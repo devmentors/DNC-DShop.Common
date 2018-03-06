@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace DShop.Common.RabbitMq
 {
@@ -18,14 +19,16 @@ namespace DShop.Common.RabbitMq
         {
         }
 
+        [JsonConstructor]
         private CorrelationContext(Guid id, Guid userId, Guid resourceId, string name,
             string origin, string culture, string resource)
         {
             Id = id;
             UserId = userId;
             ResourceId = resourceId;
-            Name = GetName(name);
-            Origin = origin.StartsWith("/") ? origin.Remove(0, 1) : origin;
+            Name = string.IsNullOrWhiteSpace(name) ? string.Empty : GetName(name);
+            Origin = string.IsNullOrWhiteSpace(origin) ? string.Empty : 
+                origin.StartsWith("/") ? origin.Remove(0, 1) : origin;
             Culture = culture;
             Resource = resource;
             CreatedAt = DateTime.UtcNow;

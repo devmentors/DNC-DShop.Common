@@ -16,7 +16,7 @@ namespace DShop.Common.RabbitMq
         }
 
         public async Task PublishCommandAsync<TCommand>(TCommand command, ICorrelationContext context) where TCommand : ICommand
-            => await _busClient.PublishAsync(command, ctx => ctx.UseMessageContext(context ?? new CorrelationContext()));
+            => await _busClient.PublishAsync(command, ctx => ctx.UseMessageContext(context));
 
         public async Task PublishEventAsync<TEvent>(TEvent @event) where TEvent : IEvent
             => await _busClient.PublishAsync(@event);
