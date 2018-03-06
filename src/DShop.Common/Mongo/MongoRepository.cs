@@ -24,6 +24,9 @@ namespace DShop.Common.Mongo
         public async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> predicate)
             => await Collection.Find(predicate).SingleOrDefaultAsync();
 
+        public async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
+            => await Collection.Find(predicate).ToListAsync();
+
         public async Task<PagedResult<TEntity>> BrowseAsync<TQuery>(Expression<Func<TEntity, bool>> predicate,
 				TQuery query) where TQuery : PagedQueryBase
 			=> await Collection.AsQueryable().Where(predicate).PaginateAsync(query);
