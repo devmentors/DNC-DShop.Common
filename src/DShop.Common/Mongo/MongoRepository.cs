@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using DShop.Common.Types;
@@ -23,7 +24,10 @@ namespace DShop.Common.Mongo
         public async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> predicate)
             => await Collection.Find(predicate).SingleOrDefaultAsync();
 
-		public async Task<PagedResult<TEntity>> BrowseAsync<TQuery>(Expression<Func<TEntity, bool>> predicate,
+        public async Task<IEnumerable<TEntity>> FindAsync<TQuery>(Expression<Func<TEntity, bool>> predicate)
+            => await Collection.AsQueryable().Where(predicate).ToListAsync();
+
+        public async Task<PagedResult<TEntity>> BrowseAsync<TQuery>(Expression<Func<TEntity, bool>> predicate,
 				TQuery query) where TQuery : PagedQueryBase
 			=> await Collection.AsQueryable().Where(predicate).PaginateAsync(query);
 
