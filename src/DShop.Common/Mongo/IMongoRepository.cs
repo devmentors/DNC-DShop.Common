@@ -11,7 +11,6 @@ namespace DShop.Common.Mongo
     {
          Task<TEntity> GetAsync(Guid id);
          Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> predicate);
-         Task<IEnumerable<TEntity>> FindAsync<TQuery>(Expression<Func<TEntity, bool>> predicate);
          Task<PagedResult<TEntity>> BrowseAsync<TQuery>(Expression<Func<TEntity, bool>> predicate,
 				TQuery query) where TQuery : PagedQueryBase;
          Task CreateAsync(TEntity entity);
