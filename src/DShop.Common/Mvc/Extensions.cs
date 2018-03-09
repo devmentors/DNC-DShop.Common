@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -18,5 +19,8 @@ namespace DShop.Common.Mvc
                     opts.SerializerSettings.Formatting = Formatting.Indented;
                     opts.SerializerSettings.Converters.Add(new StringEnumConverter());
                 });
+
+        public static IApplicationBuilder UseErrorHandler(this IApplicationBuilder builder)
+            => builder.UseMiddleware<ErrorHandlerMiddleware>();
     }
 }

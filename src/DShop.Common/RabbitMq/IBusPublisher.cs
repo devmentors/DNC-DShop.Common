@@ -6,7 +6,9 @@ namespace DShop.Common.RabbitMq
 {
     public interface IBusPublisher
     {
-        Task PublishCommandAsync<TCommand>(TCommand command, ICorrelationContext context = null) where TCommand : ICommand;
-        Task PublishEventAsync<TEvent>(TEvent @event) where TEvent : IEvent;
+        Task PublishCommandAsync<TCommand>(TCommand command, ICorrelationContext context) 
+            where TCommand : ICommand;
+        Task PublishEventAsync<TEvent>(TEvent @event, ICorrelationContext context) 
+            where TEvent : IEvent;
     }
 }
