@@ -34,8 +34,11 @@ namespace DShop.Common.RabbitMq
             CreatedAt = DateTime.UtcNow;
         }
 
-        public static ICorrelationContext From<T>(ICorrelationContext request)
-            => Create<T>(request.Id, request.UserId, request.ResourceId, request.Origin, request.Culture, request.Resource);
+        public static ICorrelationContext Empty 
+            => new CorrelationContext();
+
+        public static ICorrelationContext From<T>(ICorrelationContext context)
+            => Create<T>(context.Id, context.UserId, context.ResourceId, context.Origin, context.Culture, context.Resource);
 
         public static ICorrelationContext Create<T>(Guid id, Guid userId, Guid resourceId, string origin, string culture, string resource = "")
             => new CorrelationContext(id, userId, resourceId, typeof(T).Name, origin, culture, resource);
