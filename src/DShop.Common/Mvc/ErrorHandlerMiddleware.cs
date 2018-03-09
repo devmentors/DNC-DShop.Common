@@ -22,7 +22,7 @@ namespace DShop.Common.Mvc
             {
                 await _next(context);
             }
-            catch(Exception exception)
+            catch (Exception exception)
             {
                 await HandleErrorAsync(context, exception);
             }
@@ -30,8 +30,8 @@ namespace DShop.Common.Mvc
 
         private static Task HandleErrorAsync(HttpContext context, Exception exception)
         {
-            var errorCode = string.Empty;
-            var statusCode = HttpStatusCode.InternalServerError;
+            var errorCode = "error";
+            var statusCode = HttpStatusCode.BadRequest;
             var message = "There was an error.";
             switch(exception)
             {
