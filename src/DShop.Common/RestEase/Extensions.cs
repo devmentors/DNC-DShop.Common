@@ -9,7 +9,7 @@ namespace DShop.Common.RestEase
 {
     public static class Extensions
     {
-        public static void RegisterApiForwarder<T>(this ContainerBuilder containerBuilder, string fromSection)
+        public static void RegisterServiceForwarder<T>(this ContainerBuilder containerBuilder, string fromSection)
         {
             var named = typeof(T).ToString();
 
