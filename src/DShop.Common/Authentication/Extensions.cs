@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using DShop.Common.Options;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,9 +17,7 @@ namespace DShop.Common.Authentication
             {
                 configuration = serviceProvider.GetService<IConfiguration>();
             }
-            var section = configuration.GetSection("jwt");
-            var options = new JwtOptions();
-            section.Bind(options);
+            var options = configuration.GetOptions<JwtOptions>("jwt");
             services.AddSingleton(options);
             services.AddSingleton<IJwtHandler, JwtHandler>();
             services.AddAuthentication()
