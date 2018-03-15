@@ -41,4 +41,7 @@
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <ProjectReference Include="..\..\..\DNC-DShop.Messages\src\DShop.Messages\DShop.Messages.csproj" />
   </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <PackageReference Include="DShop.Messages" Version="1.0.*" />
+  </ItemGroup>
 </Project>
