@@ -6,5 +6,7 @@ case "$TRAVIS_BRANCH" in
     ;;
 esac
 
-dotnet restore --source "https://api.nuget.org/v3/index.json" --source "https://www.myget.org/F/dnc-dshop$MYGET_ENV/api/v3/index.json" --no-cache
-dotnet build -c Release --no-restore
+sed -i -e "s/dnc-dshop/dnc-dshop$MYGET_ENV/g" Nuget-release.config
+
+mv Nuget-release.config Nuget.config
+dotnet build -c Release
