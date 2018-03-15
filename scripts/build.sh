@@ -6,7 +6,8 @@ case "$TRAVIS_BRANCH" in
     ;;
 esac
 
-sed -i -e "s/dnc-dshop/dnc-dshop$MYGET_ENV/g" Nuget-release.config
+#Here be dragons
+sed -i -e "s/dnc-dshop/dnc-dshop$MYGET_ENV/g" MyGet.config
+mv MyGet.config Nuget.config
 
-mv Nuget-release.config Nuget.config
 dotnet build -c Release
