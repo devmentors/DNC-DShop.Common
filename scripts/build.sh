@@ -6,8 +6,4 @@ case "$TRAVIS_BRANCH" in
     ;;
 esac
 
-#Here be dragons
-sed -i -e "s/dnc-dshop/dnc-dshop$MYGET_ENV/g" MyGet.config
-mv MyGet.config Nuget.config
-
-dotnet build -c Release
+dotnet build -c Release --source https://www.myget.org/F/dnc-dshop$MYGET_ENV/api/v3/index.json --no-cache
