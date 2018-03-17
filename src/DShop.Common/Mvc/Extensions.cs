@@ -7,6 +7,9 @@ using Newtonsoft.Json.Serialization;
 using Lockbox.Client.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using System;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Linq;
 
 namespace DShop.Common.Mvc
 {
@@ -36,5 +39,21 @@ namespace DShop.Common.Mvc
                         cfg.AddLockbox();
                     }
                 });
+
+        public static T Bind<T>(this T model, Expression<Func<T,object>> expression, object value)
+        {
+            var expressionBody = (UnaryExpression)expression.Body;
+            var propertyName = ((MemberExpression)expressionBody.Operand).Member.Name.ToLowerInvariant();
+            var modelType = model.GetType();
+            var field = modelType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+                .SingleOrDefault(x => x.Name.ToLowerInvariant().StartsWith($"<{propertyName}>"));
+            if (field == null)
+            {
+                return model;
+            }
+            field.SetValue(model, value);
+
+            return model;
+        }
     }
 }
