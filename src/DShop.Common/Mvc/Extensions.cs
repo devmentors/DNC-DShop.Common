@@ -48,8 +48,12 @@ namespace DShop.Common.Mvc
 
         private static TModel Bind<TModel,TProperty>(this TModel model, Expression<Func<TModel,TProperty>> expression, object value)
         {
-            var expressionBody = (UnaryExpression)expression.Body;
-            var propertyName = ((MemberExpression)expressionBody.Operand).Member.Name.ToLowerInvariant();
+            var memberExpression = expression.Body as MemberExpression;
+            if (memberExpression == null)
+            {
+                memberExpression = ((UnaryExpression)expression.Body).Operand as MemberExpression;
+            }
+            var propertyName = memberExpression.Member.Name.ToLowerInvariant();
             var modelType = model.GetType();
             var field = modelType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
                 .SingleOrDefault(x => x.Name.ToLowerInvariant().StartsWith($"<{propertyName}>"));
