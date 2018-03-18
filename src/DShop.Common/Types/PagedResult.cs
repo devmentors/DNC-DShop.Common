@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DShop.Common.Types
@@ -15,6 +16,7 @@ namespace DShop.Common.Types
             Items = Enumerable.Empty<T>();
         }
 
+        [JsonConstructor]
         protected PagedResult(IEnumerable<T> items,
             int currentPage, int resultsPerPage,
             int totalPages, long totalResults) :
