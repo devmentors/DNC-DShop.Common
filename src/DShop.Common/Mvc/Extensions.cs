@@ -41,6 +41,12 @@ namespace DShop.Common.Mvc
                 });
 
         public static T Bind<T>(this T model, Expression<Func<T,object>> expression, object value)
+            => model.Bind<T,object>(expression, value);
+
+        public static T BindId<T>(this T model, Expression<Func<T,Guid>> expression)
+            => model.Bind<T,Guid>(expression, Guid.NewGuid());
+
+        private static TModel Bind<TModel,TProperty>(this TModel model, Expression<Func<TModel,TProperty>> expression, object value)
         {
             var expressionBody = (UnaryExpression)expression.Body;
             var propertyName = ((MemberExpression)expressionBody.Operand).Member.Name.ToLowerInvariant();
