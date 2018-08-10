@@ -15,7 +15,7 @@ namespace DShop.Common.Dispatchers
             _context = context;
         }
 
-        public async Task<TResult> DispatchAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery<TResult>
+        public async Task<TResult> QueryAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery<TResult>
             => await _context.Resolve<IQueryHandler<TQuery, TResult>>().HandleAsync(query);
     }
 }

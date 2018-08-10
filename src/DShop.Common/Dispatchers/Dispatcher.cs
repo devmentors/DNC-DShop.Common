@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using DShop.Common.Types;
-using DShop.Messages.Commands;
+using DShop.Common.Messages;
 
 namespace DShop.Common.Dispatchers
 {
@@ -16,10 +16,10 @@ namespace DShop.Common.Dispatchers
             _queryDispatcher = queryDispatcher;
         }
 
-        public async Task DispatchAsync<TCommand>(TCommand command) where TCommand : ICommand
-            => await _commandDispatcher.DispatchAsync(command);
+        public async Task SendAsync<TCommand>(TCommand command) where TCommand : ICommand
+            => await _commandDispatcher.SendAsync(command);
 
-        public async Task<TResult> DispatchAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery<TResult>
-            => await _queryDispatcher.DispatchAsync<TQuery, TResult>(query);
+        public async Task<TResult> QueryAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery<TResult>
+            => await _queryDispatcher.QueryAsync<TQuery, TResult>(query);
     }
 }

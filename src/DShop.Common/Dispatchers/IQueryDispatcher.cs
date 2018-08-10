@@ -5,6 +5,6 @@ namespace DShop.Common.Dispatchers
 {
     public interface IQueryDispatcher
     {
-        Task<TResult> DispatchAsync<TQuery,TResult>(TQuery query) where TQuery : IQuery<TResult>;
+        Task<TResult> QueryAsync<TQuery,TResult>(TQuery query) where TQuery : IQuery<TResult>;
     }
 }

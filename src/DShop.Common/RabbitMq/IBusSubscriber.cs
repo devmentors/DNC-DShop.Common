@@ -1,5 +1,4 @@
-﻿using DShop.Messages.Commands;
-using DShop.Messages.Events;
+﻿using DShop.Common.Messages;
 
 namespace DShop.Common.RabbitMq
 {

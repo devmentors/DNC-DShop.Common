@@ -1,10 +1,10 @@
 using System.Threading.Tasks;
-using DShop.Messages.Commands;
+using DShop.Common.Messages;
 
 namespace DShop.Common.Dispatchers
 {
     public interface ICommandDispatcher
     {
-         Task DispatchAsync<T>(T command) where T : ICommand;
+         Task SendAsync<T>(T command) where T : ICommand;
     }
 }

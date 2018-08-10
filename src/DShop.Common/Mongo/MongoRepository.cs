@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using DShop.Common.Types;
-using DShop.Messages.Entities;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 

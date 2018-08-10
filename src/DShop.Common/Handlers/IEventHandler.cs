@@ -1,5 +1,5 @@
 using DShop.Common.RabbitMq;
-using DShop.Messages.Events;
+using DShop.Common.Messages;
 using System.Threading.Tasks;
 
 namespace DShop.Common.Handlers

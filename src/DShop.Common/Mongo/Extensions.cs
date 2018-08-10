@@ -1,6 +1,6 @@
 using Autofac;
 using DShop.Common.Options;
-using DShop.Messages.Entities;
+using DShop.Common.Types;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 

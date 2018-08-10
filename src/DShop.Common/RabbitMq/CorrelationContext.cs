@@ -44,9 +44,6 @@ namespace DShop.Common.RabbitMq
             => new CorrelationContext(id, userId, resourceId, typeof(T).Name, origin, culture, resource);
 
         private static string GetName(string name)
-            => Underscore(name).ToLowerInvariant();
-
-        private static string Underscore(string value)
-            => string.Concat(value.Select((x, i) => i > 0 && char.IsUpper(x) ? "_" + x.ToString() : x.ToString()));
+            => name.Underscore().ToLowerInvariant();
     }
 }

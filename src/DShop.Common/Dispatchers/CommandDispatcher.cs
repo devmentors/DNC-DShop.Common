@@ -4,7 +4,7 @@ using Autofac;
 using DShop.Common.Dispatchers;
 using DShop.Common.Handlers;
 using DShop.Common.RabbitMq;
-using DShop.Messages.Commands;
+using DShop.Common.Messages;
 
 namespace TDShop.Common.Dispatchers
 {
@@ -17,7 +17,7 @@ namespace TDShop.Common.Dispatchers
             _context = context;
         }
 
-        public async Task DispatchAsync<T>(T command) where T : ICommand
+        public async Task SendAsync<T>(T command) where T : ICommand
             => await _context.Resolve<ICommandHandler<T>>().HandleAsync(command, CorrelationContext.Empty);
     }
 }

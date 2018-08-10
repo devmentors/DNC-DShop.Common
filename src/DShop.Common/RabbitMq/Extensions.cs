@@ -5,6 +5,8 @@ using DShop.Common.Options;
 using DShop.Common.RabbitMq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using RawRabbit;
+using RawRabbit.Common;
 using RawRabbit.Configuration;
 using RawRabbit.Enrichers.MessageContext;
 using RawRabbit.Instantiation;
@@ -22,6 +24,7 @@ namespace DShop.Common.RabbitMq
             {
                 var configuration = context.Resolve<IConfiguration>();
                 var rawRabbitConfiguration = configuration.GetOptions<RawRabbitConfiguration>("rawRabbit");
+                
                 return rawRabbitConfiguration;
 
             }).SingleInstance();
@@ -46,14 +49,27 @@ namespace DShop.Common.RabbitMq
             builder.Register<IInstanceFactory>(context =>
                 RawRabbitFactory.CreateInstanceFactory(new RawRabbitOptions
                 {
-                    DependencyInjection = ioc => ioc.AddSingleton(context.Resolve<RawRabbitConfiguration>()),
+                    DependencyInjection = ioc => 
+                    {
+                        ioc.AddSingleton<INamingConventions, CustomNamingConventions>();
+                        ioc.AddSingleton(context.Resolve<RawRabbitConfiguration>());
+                    },
                     Plugins = p => p
+                        .UseAttributeRouting()
                         .UseMessageContext<CorrelationContext>()
                         .UseContextForwarding()
 
                 })).SingleInstance();
 
             builder.Register(context => context.Resolve<IInstanceFactory>().Create());
-        }        
+        }
+
+        private class CustomNamingConventions : NamingConventions
+        {
+            public CustomNamingConventions()
+            {
+                ExchangeNamingConvention = type => type?.Name?.Underscore().ToLowerInvariant() ?? string.Empty;
+            }
+        }      
     }
 }
