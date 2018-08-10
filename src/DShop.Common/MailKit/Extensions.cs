@@ -12,8 +12,8 @@ namespace DShop.Common.MailKit
             {
                 var configuration = context.Resolve<IConfiguration>();
                 var options = configuration.GetOptions<MailKitOptions>("mailkit");
+                
                 return options;
-
             }).SingleInstance();
         }
     }
