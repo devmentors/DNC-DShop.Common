@@ -11,7 +11,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using DShop.Common.AppMetrics;
+using DShop.Common.Metrics;
 using DShop.Common.Options;
 
 namespace DShop.Common.Mvc
@@ -19,22 +19,7 @@ namespace DShop.Common.Mvc
     public static class Extensions
     {
         public static IMvcBuilder AddCustomMvc(this IServiceCollection services)
-        {
-            IConfiguration configuration;
-            using (var serviceProvider = services.BuildServiceProvider())
-            {
-                configuration = serviceProvider.GetService<IConfiguration>();
-            }
-            var appMetricsOptions = configuration.GetOptions<AppMetricsOptions>("appMetrics");
-
-            return services.AddMvc(o => 
-            {
-                if (appMetricsOptions.Enabled)
-                {
-                    o.AddMetricsResourceFilter();
-                }
-            }).AddDefaultJsonOptions();
-        }
+            => services.AddMvc().AddDefaultJsonOptions();
 
         public static IMvcBuilder AddDefaultJsonOptions(this IMvcBuilder builder)
             => builder.AddJsonOptions(opts =>

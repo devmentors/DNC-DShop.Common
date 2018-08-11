@@ -8,6 +8,7 @@ namespace DShop.Common.Options
         {
             var model = new TModel();
             configuration.GetSection(sectionName).Bind(model);
+            
             return model;
         }
     }

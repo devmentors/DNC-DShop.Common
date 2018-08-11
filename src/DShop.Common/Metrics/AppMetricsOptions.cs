@@ -1,6 +1,6 @@
-namespace DShop.Common.AppMetrics
+namespace DShop.Common.Metrics
 {
-    public class AppMetricsOptions
+    public class MetricsOptions
     {
         public string Database { get; set; }
         public string Uri { get; set; }
