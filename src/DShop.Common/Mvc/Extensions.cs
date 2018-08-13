@@ -18,19 +18,25 @@ namespace DShop.Common.Mvc
 {
     public static class Extensions
     {
-        public static IMvcBuilder AddCustomMvc(this IServiceCollection services)
-            => services.AddMvc().AddDefaultJsonOptions();
+        public static IMvcCoreBuilder AddCustomMvc(this IServiceCollection services)
+            => services
+                .AddMvcCore()
+                .AddJsonFormatters()
+                .AddDataAnnotations()
+                .AddApiExplorer()
+                .AddDefaultJsonOptions()
+                .AddAuthorization();
 
-        public static IMvcBuilder AddDefaultJsonOptions(this IMvcBuilder builder)
-            => builder.AddJsonOptions(opts =>
+        public static IMvcCoreBuilder AddDefaultJsonOptions(this IMvcCoreBuilder builder)
+            => builder.AddJsonOptions(o =>
                 {
-                    opts.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                    opts.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
-                    opts.SerializerSettings.DateParseHandling = DateParseHandling.DateTimeOffset;
-                    opts.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.None;
-                    opts.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                    opts.SerializerSettings.Formatting = Formatting.Indented;
-                    opts.SerializerSettings.Converters.Add(new StringEnumConverter());
+                    o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                    o.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
+                    o.SerializerSettings.DateParseHandling = DateParseHandling.DateTimeOffset;
+                    o.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.None;
+                    o.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                    o.SerializerSettings.Formatting = Formatting.Indented;
+                    o.SerializerSettings.Converters.Add(new StringEnumConverter());
                 });
 
         public static IApplicationBuilder UseErrorHandler(this IApplicationBuilder builder)

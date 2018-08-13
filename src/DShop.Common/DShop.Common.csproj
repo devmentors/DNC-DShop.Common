@@ -3,10 +3,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <!-- <PackageReference Include="App.Metrics" Version="2.1.0" /> -->
-    <!-- <PackageReference Include="App.Metrics.AspNetCore.Endpoints" Version="2.0.0" />
-    <PackageReference Include="App.Metrics.AspNetCore.Health" Version="2.0.0" />
-    <PackageReference Include="App.Metrics.AspNetCore.Tracking" Version="2.0.0" /> -->
     <PackageReference Include="App.Metrics.AspNetCore" Version="2.0.0" />
     <PackageReference Include="App.Metrics.AspNetCore.Health" Version="2.0.0" />
     <PackageReference Include="App.Metrics.AspNetCore.Health.Endpoints" Version="2.0.0" />
@@ -15,9 +11,6 @@
     <PackageReference Include="App.Metrics.Extensions.Configuration" Version="2.0.0" />
     <PackageReference Include="App.Metrics.Reporting.Console" Version="2.0.0" />
     <PackageReference Include="App.Metrics.Reporting.InfluxDB" Version="2.0.0" />
-    <!-- <PackageReference Include="App.Metrics.Extensions.Mvc" Version="1.2.1" /> -->
-    <!-- <PackageReference Include="App.Metrics.Extensions.Reporting.InfluxDB" Version="1.2.0" /> -->
-    <!-- <PackageReference Include="App.Metrics.Formatters.Json" Version="2.1.0" /> -->
     <PackageReference Include="Autofac" Version="4.6.2" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.0" />
     <PackageReference Include="Lockbox.Client" Version="2.0.2" />
@@ -27,6 +20,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.1.1" />
