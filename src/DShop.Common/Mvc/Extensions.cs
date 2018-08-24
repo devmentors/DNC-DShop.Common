@@ -13,19 +13,24 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using DShop.Common.Metrics;
 using DShop.Common.Options;
+using Microsoft.AspNetCore.Http;
 
 namespace DShop.Common.Mvc
 {
     public static class Extensions
     {
         public static IMvcCoreBuilder AddCustomMvc(this IServiceCollection services)
-            => services
+        {
+            services.AddSingleton<IServiceId, ServiceId>();
+
+            return services
                 .AddMvcCore()
                 .AddJsonFormatters()
                 .AddDataAnnotations()
                 .AddApiExplorer()
                 .AddDefaultJsonOptions()
                 .AddAuthorization();
+        }
 
         public static IMvcCoreBuilder AddDefaultJsonOptions(this IMvcCoreBuilder builder)
             => builder.AddJsonOptions(o =>
@@ -41,6 +46,16 @@ namespace DShop.Common.Mvc
 
         public static IApplicationBuilder UseErrorHandler(this IApplicationBuilder builder)
             => builder.UseMiddleware<ErrorHandlerMiddleware>();
+
+        public static IApplicationBuilder UseServiceId(this IApplicationBuilder builder)
+            => builder.Map("/id", c => c.Run(async ctx => 
+            {
+                using (var scope = c.ApplicationServices.CreateScope())
+                {
+                    var id = scope.ServiceProvider.GetService<IServiceId>().Id;
+                    await ctx.Response.WriteAsync(id);
+                }
+            }));
 
         public static IWebHostBuilder UseLockbox(this IWebHostBuilder builder)
             => builder.ConfigureAppConfiguration((ctx, cfg) => 

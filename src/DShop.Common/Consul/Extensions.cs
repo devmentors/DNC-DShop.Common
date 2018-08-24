@@ -1,5 +1,6 @@
 using System;
 using Consul;
+using DShop.Common.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -18,7 +19,6 @@ namespace DShop.Common.Consul
                 configuration = serviceProvider.GetService<IConfiguration>();
             }
             services.Configure<ConsulOptions>(configuration.GetSection("consul"));
-            services.AddSingleton<IServiceId, ConsulServiceId>();
             services.AddTransient<IConsulServiceRegistry, ConsulServiceRegistry>();
             services.AddTransient<ConsulServiceDiscoveryMessageHandler>();
             services.AddHttpClient<ConsulHttpClient>()
@@ -34,6 +34,7 @@ namespace DShop.Common.Consul
             }));
         }
 
+        //Returns unique service ID used for deregistering service.
         public static string UseConsul(this IApplicationBuilder app)
         {
             using (var scope = app.ApplicationServices.CreateScope())
@@ -73,5 +74,7 @@ namespace DShop.Common.Consul
                 return serviceId;
             }
         }
+
+        
     }
 }

@@ -1,8 +1,8 @@
 using System;
 
-namespace DShop.Common.Consul
+namespace DShop.Common.Mvc
 {
-    public class ConsulServiceId : IServiceId
+    public class ServiceId : IServiceId
     {
         private static readonly string _id = $"{Guid.NewGuid():N}";
 

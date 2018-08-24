@@ -1,4 +1,4 @@
-namespace DShop.Common.Consul
+namespace DShop.Common.Mvc
 {
     public interface IServiceId
     {
