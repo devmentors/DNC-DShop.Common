@@ -13,6 +13,7 @@
     <PackageReference Include="App.Metrics.Reporting.InfluxDB" Version="2.0.0" />
     <PackageReference Include="Autofac" Version="4.6.2" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.0" />
+    <PackageReference Include="Consul" Version="0.7.2.6" />
     <PackageReference Include="Lockbox.Client" Version="2.0.2" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.1.1" />
@@ -28,6 +29,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.1.1" />
     <PackageReference Include="MongoDB.Driver" Version="2.4.4" />
