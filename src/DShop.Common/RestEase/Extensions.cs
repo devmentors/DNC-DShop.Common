@@ -6,6 +6,7 @@ using DShop.Common.Consul;
 using DShop.Common.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RestEase;
 
 namespace DShop.Common.RestEase
@@ -48,7 +49,7 @@ namespace DShop.Common.RestEase
             services.AddHttpClient(clientName)
                 .AddHttpMessageHandler(c =>
                     new ConsulServiceDiscoveryMessageHandler(c.GetService<IConsulServicesRegistry>(),
-                        serviceName, overrideRequestUri: true));
+                        c.GetService<IOptions<ConsulOptions>>(), serviceName, overrideRequestUri: true));
         }
 
         private static void ConfigureDefaultClient(IServiceCollection services, string clientName,

@@ -25,9 +25,9 @@ namespace DShop.Common.Consul
             services.AddHttpClient<ConsulHttpClient>()
                 .AddHttpMessageHandler<ConsulServiceDiscoveryMessageHandler>();
 
-            return services.AddSingleton<IConsulClient>(s => new ConsulClient(cfg =>
+            return services.AddSingleton<IConsulClient>(c => new ConsulClient(cfg =>
             {
-                var options = s.GetRequiredService<IOptions<ConsulOptions>>().Value;
+                var options = c.GetRequiredService<IOptions<ConsulOptions>>().Value;
                 if (!string.IsNullOrEmpty(options.Endpoint))
                 {
                     cfg.Address = new Uri(options.Endpoint);

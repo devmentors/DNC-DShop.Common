@@ -10,5 +10,6 @@ namespace DShop.Common.Consul
         public string PingEndpoint { get; set; }
         public int PingInterval { get; set; }
         public int RemoveAfterInterval { get; set; }
+        public int RequestRetries { get; set; }
     }
 }
