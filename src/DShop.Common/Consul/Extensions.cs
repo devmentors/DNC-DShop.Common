@@ -18,8 +18,9 @@ namespace DShop.Common.Consul
             {
                 configuration = serviceProvider.GetService<IConfiguration>();
             }
+
             services.Configure<ConsulOptions>(configuration.GetSection("consul"));
-            services.AddTransient<IConsulServiceRegistry, ConsulServiceRegistry>();
+            services.AddTransient<IConsulServicesRegistry, ConsulServicesRegistry>();
             services.AddTransient<ConsulServiceDiscoveryMessageHandler>();
             services.AddHttpClient<ConsulHttpClient>()
                 .AddHttpMessageHandler<ConsulServiceDiscoveryMessageHandler>();
@@ -34,12 +35,11 @@ namespace DShop.Common.Consul
             }));
         }
 
-        //Returns unique service ID used for deregistering service.
+        //Returns unique service ID used for removing the service from registry.
         public static string UseConsul(this IApplicationBuilder app)
         {
             using (var scope = app.ApplicationServices.CreateScope())
             {
-                var applicationLifetime = scope.ServiceProvider.GetService<IApplicationLifetime>();
                 var uniqueId = scope.ServiceProvider.GetService<IServiceId>().Id;
                 var options = scope.ServiceProvider.GetService<IOptions<ConsulOptions>>();
                 var client = scope.ServiceProvider.GetService<IConsulClient>();
@@ -47,9 +47,12 @@ namespace DShop.Common.Consul
                 var serviceId = $"{serviceName}:{uniqueId}";
                 var address = options.Value.Address;
                 var port = options.Value.Port;
-                var pingEndpoint = string.IsNullOrWhiteSpace(options.Value.PingEndpoint) ? "ping" : options.Value.PingEndpoint;
+                var pingEndpoint = string.IsNullOrWhiteSpace(options.Value.PingEndpoint)
+                    ? "ping"
+                    : options.Value.PingEndpoint;
                 var pingInterval = options.Value.PingInterval <= 0 ? 5 : options.Value.PingInterval;
-                var deregisterInterval = options.Value.DeregisterInterval <= 0 ? 10 : options.Value.DeregisterInterval;
+                var removeAfterInterval =
+                    options.Value.RemoveAfterInterval <= 0 ? 10 : options.Value.RemoveAfterInterval;
                 var registration = new AgentServiceRegistration
                 {
                     Name = serviceName,
@@ -57,16 +60,15 @@ namespace DShop.Common.Consul
                     Address = address,
                     Port = port,
                 };
-
                 if (options.Value.PingEnabled)
                 {
                     var check = new AgentServiceCheck
                     {
-                    Interval = TimeSpan.FromSeconds(pingInterval),
-                    DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(deregisterInterval),
-                    HTTP = $"{address}{(port > 0 ? $":{port}" : string.Empty)}/{pingEndpoint}"
+                        Interval = TimeSpan.FromSeconds(pingInterval),
+                        DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(removeAfterInterval),
+                        HTTP = $"{address}{(port > 0 ? $":{port}" : string.Empty)}/{pingEndpoint}"
                     };
-                    registration.Checks = new[] { check };
+                    registration.Checks = new[] {check};
                 }
 
                 client.Agent.ServiceRegister(registration);
@@ -74,7 +76,5 @@ namespace DShop.Common.Consul
                 return serviceId;
             }
         }
-
-        
     }
 }

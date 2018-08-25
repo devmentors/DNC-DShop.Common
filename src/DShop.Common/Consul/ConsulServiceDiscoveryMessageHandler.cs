@@ -1,27 +1,35 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Consul;
 
 namespace DShop.Common.Consul
 {
     public class ConsulServiceDiscoveryMessageHandler : DelegatingHandler
     {
-        private readonly IConsulServiceRegistry _serviceRegistry;
+        private readonly IConsulServicesRegistry _servicesRegistry;
+        private readonly string _serviceName;
+        private readonly bool? _overrideRequestUri;
 
-        public ConsulServiceDiscoveryMessageHandler(IConsulServiceRegistry serviceRegistry)
+        public ConsulServiceDiscoveryMessageHandler(IConsulServicesRegistry servicesRegistry,
+            string serviceName = null, bool? overrideRequestUri = null)
         {
-            _serviceRegistry = serviceRegistry;
+            _servicesRegistry = servicesRegistry;
+            _serviceName = serviceName;
+            _overrideRequestUri = overrideRequestUri;
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+            CancellationToken cancellationToken)
         {
-            var currentUri = request.RequestUri;
-            var name = currentUri.Host;
-            var service = await _serviceRegistry.GetAsync(name);
+            var currentUri = GetUri(request);
+            var name = string.IsNullOrWhiteSpace(_serviceName) ? currentUri.Host : _serviceName;
+            var service = await _servicesRegistry.GetAsync(name);
             if (service == null)
             {
-                throw new ConsulServiceNotFoundException($"Service: '{name}' was not found.", name);
+                throw new ConsulServiceNotFoundException($"Consul service: '{name}' was not found.", name);
             }
 
             var uriBuilder = new UriBuilder(currentUri)
@@ -33,5 +41,13 @@ namespace DShop.Common.Consul
 
             return await base.SendAsync(request, cancellationToken);
         }
+
+        private Uri GetUri(HttpRequestMessage request)
+            => string.IsNullOrWhiteSpace(_serviceName)
+                ? request.RequestUri
+                : _overrideRequestUri == true
+                    ? new Uri(
+                        $"{request.RequestUri.Scheme}://{_serviceName}/{request.RequestUri.Host}{request.RequestUri.PathAndQuery}")
+                    : request.RequestUri;
     }
 }

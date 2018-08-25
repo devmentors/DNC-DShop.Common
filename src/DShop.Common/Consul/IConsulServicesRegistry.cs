@@ -1,9 +1,10 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Consul;
 
 namespace DShop.Common.Consul
 {
-    public interface IConsulServiceRegistry
+    public interface IConsulServicesRegistry
     {
         Task<AgentService> GetAsync(string name);
     }
