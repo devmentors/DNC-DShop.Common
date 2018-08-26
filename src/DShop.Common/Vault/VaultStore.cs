@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
@@ -12,27 +13,36 @@ namespace DShop.Common.Vault
 {
     public class VaultStore : IVaultStore
     {
-        private readonly IOptions<VaultOptions> _options;
+        private readonly VaultOptions _options;
 
-        public VaultStore(IOptions<VaultOptions> options)
+        public VaultStore(VaultOptions options)
         {
             _options = options;
             LoadEnvironmentVariables();
         }
 
         public async Task<T> GetDefaultAsync<T>()
-            => await GetAsync<T>(_options.Value.Key);
+            => await GetAsync<T>(_options.Key);
+
+        public async Task<IDictionary<string, object>> GetDefaultAsync()
+            => await GetAsync(_options.Key);
 
         public async Task<T> GetAsync<T>(string key)
+            => JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject((await GetAsync(key))));
+
+        public async Task<IDictionary<string, object>> GetAsync(string key)
         {
-            var settings = new VaultClientSettings(_options.Value.Url, GetAuthMethod());
-            var client = new VaultClient(settings);
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new VaultException("Vault secret key can not be empty.");            
+            }
             try
             {
+                var settings = new VaultClientSettings(_options.Url, GetAuthMethod());
+                var client = new VaultClient(settings);
                 var secret = await client.V1.Secrets.KeyValue.V2.ReadSecretAsync(key);
 
-                return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(secret.Data.Data));
-
+                return secret.Data.Data;
             }
             catch (Exception exception)
             {
@@ -43,24 +53,24 @@ namespace DShop.Common.Vault
 
         private IAuthMethodInfo GetAuthMethod()
         {
-            switch(_options.Value.AuthType?.ToLowerInvariant())
+            switch(_options.AuthType?.ToLowerInvariant())
             {
-                case "token": return new TokenAuthMethodInfo(_options.Value.Token);
-                case "userpass": return new UserPassAuthMethodInfo(_options.Value.Username, _options.Value.Password);
+                case "token": return new TokenAuthMethodInfo(_options.Token);
+                case "userpass": return new UserPassAuthMethodInfo(_options.Username, _options.Password);
             }
 
-            throw new VaultAuthTypeNotSupportedException($"Vault auth type: '{_options.Value.AuthType}' is not supported.",
-                _options.Value.AuthType);
+            throw new VaultAuthTypeNotSupportedException($"Vault auth type: '{_options.AuthType}' is not supported.",
+                _options.AuthType);
         }
 
         private void LoadEnvironmentVariables()
         {
-            _options.Value.Url = GetEnvironmentVariableValue("VAULT_URL") ?? _options.Value.Url;
-            _options.Value.Key = GetEnvironmentVariableValue("VAULT_KEY") ?? _options.Value.Key;
-            _options.Value.AuthType = GetEnvironmentVariableValue("VAULT_AUTH_TYPE") ?? _options.Value.AuthType;
-            _options.Value.Token = GetEnvironmentVariableValue("VAULT_TOKEN") ?? _options.Value.Token;
-            _options.Value.Username = GetEnvironmentVariableValue("VAULT_USERNAME") ?? _options.Value.Username;
-            _options.Value.Password = GetEnvironmentVariableValue("VAULT_PASSWORD") ?? _options.Value.Password;
+            _options.Url = GetEnvironmentVariableValue("VAULT_URL") ?? _options.Url;
+            _options.Key = GetEnvironmentVariableValue("VAULT_KEY") ?? _options.Key;
+            _options.AuthType = GetEnvironmentVariableValue("VAULT_AUTH_TYPE") ?? _options.AuthType;
+            _options.Token = GetEnvironmentVariableValue("VAULT_TOKEN") ?? _options.Token;
+            _options.Username = GetEnvironmentVariableValue("VAULT_USERNAME") ?? _options.Username;
+            _options.Password = GetEnvironmentVariableValue("VAULT_PASSWORD") ?? _options.Password;
         }
 
         private static string GetEnvironmentVariableValue(string key)

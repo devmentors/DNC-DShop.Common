@@ -2,7 +2,7 @@ namespace DShop.Common.Consul
 {
     public class ConsulOptions
     {
-        public string Endpoint { get; set; }
+        public string Url { get; set; }
         public string Service { get; set; }
         public string Address { get; set; }
         public int Port { get; set; }

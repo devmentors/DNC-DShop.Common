@@ -21,6 +21,12 @@ namespace DShop.Common.Mvc
     {
         public static IMvcCoreBuilder AddCustomMvc(this IServiceCollection services)
         {
+            IConfiguration configuration;
+            using (var serviceProvider = services.BuildServiceProvider())
+            {
+                configuration = serviceProvider.GetService<IConfiguration>();
+                services.Configure<AppOptions>(configuration.GetSection("app"));
+            }
             services.AddSingleton<IServiceId, ServiceId>();
 
             return services

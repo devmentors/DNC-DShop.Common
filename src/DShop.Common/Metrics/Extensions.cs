@@ -1,29 +1,18 @@
 using System;
-using System.IO;
 using App.Metrics;
 using App.Metrics.AspNetCore;
 using App.Metrics.AspNetCore.Health;
-using App.Metrics.Extensions.Configuration;
 using DShop.Common.Options;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace DShop.Common.Metrics
 {
     public static class Extensions
     {
         public static IWebHostBuilder UseAppMetrics(this IWebHostBuilder builder)
-            => builder.ConfigureMetricsWithDefaults(b => 
+            => builder.ConfigureMetricsWithDefaults((ctx, b) => 
                 {
-                    var configuration = new ConfigurationBuilder()
-                        .SetBasePath(Directory.GetCurrentDirectory())
-                        .AddJsonFile("appsettings.json")
-                        .AddEnvironmentVariables()
-                        .Build();
-
-                    var options = configuration.GetOptions<MetricsOptions>("metrics");
+                    var options = ctx.Configuration.GetOptions<MetricsOptions>("metrics");
                     if (!options.Enabled) {
                         return;
                     }

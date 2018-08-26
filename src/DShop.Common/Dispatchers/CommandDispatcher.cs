@@ -1,12 +1,10 @@
-using System;
 using System.Threading.Tasks;
 using Autofac;
-using DShop.Common.Dispatchers;
 using DShop.Common.Handlers;
-using DShop.Common.RabbitMq;
 using DShop.Common.Messages;
+using DShop.Common.RabbitMq;
 
-namespace TDShop.Common.Dispatchers
+namespace DShop.Common.Dispatchers
 {
     public class CommandDispatcher : ICommandDispatcher
     {

@@ -1,5 +1,4 @@
 using Autofac;
-using TDShop.Common.Dispatchers;
 
 namespace DShop.Common.Dispatchers
 {

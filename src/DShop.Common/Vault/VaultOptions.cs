@@ -2,6 +2,7 @@ namespace DShop.Common.Vault
 {
     public class VaultOptions
     {
+        public bool Enabled { get; set; }
         public string Url { get; set; }
         public string Key { get; set; }
         public string AuthType { get; set; }
