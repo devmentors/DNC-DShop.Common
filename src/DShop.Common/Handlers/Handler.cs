@@ -8,35 +8,50 @@ namespace DShop.Common.Handlers
 	{
         private Func<Task> _handle;
         private Func<Task> _onSuccess;
+        private Func<Task> _always;
         private Func<Exception, Task> _onError;
-        private Func<DShopException, Task> _onDShopError;
+        private Func<DShopException, Task> _onCustomError;
+        private bool _rethrowException;
+        private bool _rethrowCustomException;
 
-
-        IHandler IHandler.Handle(Func<Task> handle)
+        public IHandler Handle(Func<Task> handle)
         {
             _handle = handle;
+
             return this;
         }
 
-        IHandler IHandler.OnSuccess(Func<Task> onSuccess)
+        public IHandler OnSuccess(Func<Task> onSuccess)
         {
             _onSuccess = onSuccess;
+
             return this;
         }
 
-        IHandler IHandler.OnError(Func<Exception, Task> onError)
+        public IHandler Always(Func<Task> always)
+        {
+            _always = always;
+
+            return this;
+        }
+
+        public IHandler OnError(Func<Exception, Task> onError, bool rethrow = false)
         {
             _onError = onError;
+            _rethrowException = rethrow;
+
             return this;
         }
 
-        IHandler IHandler.OnDShopError(Func<DShopException, Task> onDShopError)
+        public IHandler OnDShopError(Func<DShopException, Task> onCustomError, bool rethrow = false)
         {
-            _onDShopError = onDShopError;
+            _onCustomError = onCustomError;
+            _rethrowCustomException = rethrow;
+
             return this;
         }
 
-        async Task IHandler.ExecuteAsync()
+        public async Task ExecuteAsync()
         {
             bool isFailure = false;
 
@@ -44,23 +59,32 @@ namespace DShop.Common.Handlers
             {
                 await _handle();
             }
-            catch(DShopException emmaException)
+            catch (DShopException customException)
             {
                 isFailure = true;
-                await _onDShopError?.Invoke(emmaException);
+                await _onCustomError?.Invoke(customException);
+                if (_rethrowCustomException) 
+                {
+                    throw;
+                }
             }
-            catch(Exception exceptoin)
+            catch (Exception exception)
             {
                 isFailure = true;
-                await _onError?.Invoke(exceptoin);
+                await _onError?.Invoke(exception);
+                if (_rethrowException) 
+                {
+                    throw;
+                }
             }
             finally
             {
-                if(!isFailure)
+                if (!isFailure)
                 {
                     await _onSuccess?.Invoke();
                 }
+                await _always?.Invoke();
             }
         }
-	}
+    }
 }
