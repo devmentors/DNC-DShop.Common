@@ -43,7 +43,7 @@ namespace DShop.Common.Handlers
             return this;
         }
 
-        public IHandler OnDShopError(Func<DShopException, Task> onCustomError, bool rethrow = false)
+        public IHandler OnCustomError(Func<DShopException, Task> onCustomError, bool rethrow = false)
         {
             _onCustomError = onCustomError;
             _rethrowCustomException = rethrow;

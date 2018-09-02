@@ -10,10 +10,8 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc;
-using DShop.Common.Metrics;
-using DShop.Common.Options;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace DShop.Common.Mvc
 {
@@ -21,12 +19,12 @@ namespace DShop.Common.Mvc
     {
         public static IMvcCoreBuilder AddCustomMvc(this IServiceCollection services)
         {
-            IConfiguration configuration;
             using (var serviceProvider = services.BuildServiceProvider())
             {
-                configuration = serviceProvider.GetService<IConfiguration>();
+                var configuration = serviceProvider.GetService<IConfiguration>();
                 services.Configure<AppOptions>(configuration.GetSection("app"));
             }
+
             services.AddSingleton<IServiceId, ServiceId>();
 
             return services
@@ -40,21 +38,27 @@ namespace DShop.Common.Mvc
 
         public static IMvcCoreBuilder AddDefaultJsonOptions(this IMvcCoreBuilder builder)
             => builder.AddJsonOptions(o =>
-                {
-                    o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                    o.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
-                    o.SerializerSettings.DateParseHandling = DateParseHandling.DateTimeOffset;
-                    o.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.None;
-                    o.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                    o.SerializerSettings.Formatting = Formatting.Indented;
-                    o.SerializerSettings.Converters.Add(new StringEnumConverter());
-                });
+            {
+                o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                o.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
+                o.SerializerSettings.DateParseHandling = DateParseHandling.DateTimeOffset;
+                o.SerializerSettings.PreserveReferencesHandling = PreserveReferencesHandling.None;
+                o.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                o.SerializerSettings.Formatting = Formatting.Indented;
+                o.SerializerSettings.Converters.Add(new StringEnumConverter());
+            });
 
         public static IApplicationBuilder UseErrorHandler(this IApplicationBuilder builder)
             => builder.UseMiddleware<ErrorHandlerMiddleware>();
 
+        public static IApplicationBuilder UseAllForwardedHeaders(this IApplicationBuilder builder)
+            => builder.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.All
+            });
+
         public static IApplicationBuilder UseServiceId(this IApplicationBuilder builder)
-            => builder.Map("/id", c => c.Run(async ctx => 
+            => builder.Map("/id", c => c.Run(async ctx =>
             {
                 using (var scope = c.ApplicationServices.CreateScope())
                 {
@@ -64,28 +68,30 @@ namespace DShop.Common.Mvc
             }));
 
         public static IWebHostBuilder UseLockbox(this IWebHostBuilder builder)
-            => builder.ConfigureAppConfiguration((ctx, cfg) => 
+            => builder.ConfigureAppConfiguration((ctx, cfg) =>
+            {
+                var useLockbox = Environment.GetEnvironmentVariable("USE_LOCKBOX");
+                if (useLockbox?.ToLowerInvariant() == "true")
                 {
-                    var useLockbox = Environment.GetEnvironmentVariable("USE_LOCKBOX");
-                    if (useLockbox?.ToLowerInvariant() == "true")
-                    {
-                        cfg.AddLockbox();
-                    }
-                });
+                    cfg.AddLockbox();
+                }
+            });
 
-        public static T Bind<T>(this T model, Expression<Func<T,object>> expression, object value)
-            => model.Bind<T,object>(expression, value);
+        public static T Bind<T>(this T model, Expression<Func<T, object>> expression, object value)
+            => model.Bind<T, object>(expression, value);
 
-        public static T BindId<T>(this T model, Expression<Func<T,Guid>> expression)
-            => model.Bind<T,Guid>(expression, Guid.NewGuid());
+        public static T BindId<T>(this T model, Expression<Func<T, Guid>> expression)
+            => model.Bind<T, Guid>(expression, Guid.NewGuid());
 
-        private static TModel Bind<TModel,TProperty>(this TModel model, Expression<Func<TModel,TProperty>> expression, object value)
+        private static TModel Bind<TModel, TProperty>(this TModel model, Expression<Func<TModel, TProperty>> expression,
+            object value)
         {
             var memberExpression = expression.Body as MemberExpression;
             if (memberExpression == null)
             {
-                memberExpression = ((UnaryExpression)expression.Body).Operand as MemberExpression;
+                memberExpression = ((UnaryExpression) expression.Body).Operand as MemberExpression;
             }
+
             var propertyName = memberExpression.Member.Name.ToLowerInvariant();
             var modelType = model.GetType();
             var field = modelType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
@@ -94,6 +100,7 @@ namespace DShop.Common.Mvc
             {
                 return model;
             }
+
             field.SetValue(model, value);
 
             return model;

@@ -1,5 +1,4 @@
 ﻿using Autofac;
-using DShop.Common.Options;
 using Microsoft.Extensions.Configuration;
 
 namespace DShop.Common.MailKit

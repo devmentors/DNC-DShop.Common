@@ -1,7 +1,5 @@
 using System;
 using System.Text;
-using DShop.Common.Options;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;

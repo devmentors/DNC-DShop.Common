@@ -1,9 +1,7 @@
 using System;
 using System.Linq;
 using System.Net.Http;
-using Autofac;
 using DShop.Common.Consul;
-using DShop.Common.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

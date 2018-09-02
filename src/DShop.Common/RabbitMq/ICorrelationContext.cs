@@ -7,6 +7,8 @@ namespace DShop.Common.RabbitMq
         Guid Id { get; }
         Guid UserId { get; }
         Guid ResourceId { get; }
+        string TraceId { get; }
+        string ConnectionId { get; }
         string Name { get; }
         string Origin { get; }
         string Resource { get; }

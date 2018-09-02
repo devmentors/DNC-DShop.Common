@@ -1,5 +1,4 @@
 using Autofac;
-using DShop.Common.Options;
 using DShop.Common.Types;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
@@ -8,7 +7,7 @@ namespace DShop.Common.Mongo
 {
     public static class Extensions
     {
-        public static void AddMongoDB(this ContainerBuilder builder)
+        public static void AddMongo(this ContainerBuilder builder)
         {
             builder.Register(context =>
             {
@@ -42,7 +41,7 @@ namespace DShop.Common.Mongo
                 .InstancePerLifetimeScope();
         }
 
-        public static void AddMongoDBRepository<TEntity>(this ContainerBuilder builder, string collectionName) 
+        public static void AddMongoRepository<TEntity>(this ContainerBuilder builder, string collectionName) 
             where TEntity : IIdentifiable
             => builder.Register(ctx => new MongoRepository<TEntity>(ctx.Resolve<IMongoDatabase>(), collectionName))
                 .As<IMongoRepository<TEntity>>()

@@ -1,8 +1,6 @@
 using System.Reflection;
 using Autofac;
 using DShop.Common.Handlers;
-using DShop.Common.Options;
-using DShop.Common.RabbitMq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using RawRabbit;

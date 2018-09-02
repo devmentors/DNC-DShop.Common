@@ -1,4 +1,4 @@
-namespace DShop.Common.Mvc
+namespace DShop.Common
 {
     public class AppOptions
     {
