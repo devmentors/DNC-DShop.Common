@@ -18,13 +18,17 @@ namespace DShop.Common.Metrics
                             return;
                         }
 
-                        builder.Report.ToInfluxDb(o =>
+                        if (options.InfluxEnabled)
                         {
-                            o.InfluxDb.Database = options.Database;
-                            o.InfluxDb.BaseUri = new Uri(options.InfluxUrl);
-                            o.InfluxDb.CreateDataBaseIfNotExists = true;
-                            o.FlushInterval = TimeSpan.FromSeconds(options.Interval);
-                        });
+                            builder.Report.ToInfluxDb(o =>
+                            {
+                                o.InfluxDb.Database = options.Database;
+                                o.InfluxDb.BaseUri = new Uri(options.InfluxUrl);
+                                o.InfluxDb.CreateDataBaseIfNotExists = true;
+                                o.FlushInterval = TimeSpan.FromSeconds(options.Interval);
+                            });
+                        }
+
                         if (options.PrometheusEnabled)
                         {
 
