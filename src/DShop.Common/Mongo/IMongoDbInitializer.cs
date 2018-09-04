@@ -1,9 +1,6 @@
-using System.Threading.Tasks;
-
 namespace DShop.Common.Mongo
 {
-    public interface IMongoDbInitializer
+    public interface IMongoDbInitializer : IInitializer
     {
-        Task InitializeAsync();
     }
 }

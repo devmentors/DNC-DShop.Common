@@ -1,10 +1,13 @@
+using System;
 using System.Reflection;
 using Autofac;
 using DShop.Common.Handlers;
+using DShop.Common.Messages;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using RawRabbit;
 using RawRabbit.Common;
+using RawRabbit.Configuration;
 using RawRabbit.Enrichers.MessageContext;
 using RawRabbit.Instantiation;
 
@@ -20,9 +23,9 @@ namespace DShop.Common.RabbitMq
             builder.Register(context =>
             {
                 var configuration = context.Resolve<IConfiguration>();
-                var rawRabbitConfiguration = configuration.GetOptions<RabbitMqOptions>("rabbitMq");
-                
-                return rawRabbitConfiguration;
+                var options = configuration.GetOptions<RabbitMqOptions>("rabbitMq");
+
+                return options;
 
             }).SingleInstance();
 
@@ -44,29 +47,42 @@ namespace DShop.Common.RabbitMq
         private static void ConfigureBus(ContainerBuilder builder)
         {
             builder.Register<IInstanceFactory>(context =>
-                RawRabbitFactory.CreateInstanceFactory(new RawRabbitOptions
+            {
+                var options = context.Resolve<RabbitMqOptions>();
+                var namingConventions = new CustomNamingConventions(options.Namespace);
+
+                return RawRabbitFactory.CreateInstanceFactory(new RawRabbitOptions
                 {
-                    DependencyInjection = ioc => 
+                    DependencyInjection = ioc =>
                     {
-                        ioc.AddSingleton<INamingConventions, CustomNamingConventions>();
-                        ioc.AddSingleton(context.Resolve<RabbitMqOptions>());
+                        ioc.AddSingleton(options);
+                        ioc.AddSingleton<INamingConventions>(namingConventions);
                     },
                     Plugins = p => p
                         .UseAttributeRouting()
                         .UseMessageContext<CorrelationContext>()
                         .UseContextForwarding()
-
-                })).SingleInstance();
-
+                });
+            }).SingleInstance();
             builder.Register(context => context.Resolve<IInstanceFactory>().Create());
         }
 
         private class CustomNamingConventions : NamingConventions
         {
-            public CustomNamingConventions()
+            public CustomNamingConventions(string defaultNamespace)
             {
-                ExchangeNamingConvention = type => type?.Name?.Underscore().ToLowerInvariant() ?? string.Empty;
+                ExchangeNamingConvention = type => GetExchangeName(defaultNamespace, type);
             }
-        }      
+
+            private static string GetExchangeName(string defaultNamespace, Type type)
+                => $"{GetNamespace(defaultNamespace, type)}{type.Name.Underscore()}".ToLowerInvariant();
+
+            private static string GetNamespace(string defaultNamespace, Type type)
+            {
+                var @namespace = type.GetCustomAttribute<MessageNamespaceAttribute>()?.Namespace ?? defaultNamespace;
+
+                return string.IsNullOrWhiteSpace(@namespace) ? string.Empty : $"{@namespace}.";
+            }
+        }
     }
 }

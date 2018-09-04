@@ -14,11 +14,11 @@ namespace DShop.Common.RabbitMq
             _busClient = busClient;
         }
 
-        public async Task SendAsync<TCommand>(TCommand command, ICorrelationContext context) 
+        public async Task SendAsync<TCommand>(TCommand command, ICorrelationContext context)
             where TCommand : ICommand
             => await _busClient.PublishAsync(command, ctx => ctx.UseMessageContext(context));
 
-        public async Task PublishAsync<TEvent>(TEvent @event, ICorrelationContext context) 
+        public async Task PublishAsync<TEvent>(TEvent @event, ICorrelationContext context)
             where TEvent : IEvent
             => await _busClient.PublishAsync(@event, ctx => ctx.UseMessageContext(context));
     }

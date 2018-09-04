@@ -1,7 +1,7 @@
 namespace DShop.Common.Messages
 {
     //Marker
-    public interface ICommand
+    public interface ICommand : IMessage
     {
     }
 }

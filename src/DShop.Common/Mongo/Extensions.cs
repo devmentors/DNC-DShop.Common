@@ -1,6 +1,8 @@
+using System;
 using Autofac;
 using DShop.Common.Types;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 
 namespace DShop.Common.Mongo
@@ -13,15 +15,15 @@ namespace DShop.Common.Mongo
             {
                 var configuration = context.Resolve<IConfiguration>();
                 var options = configuration.GetOptions<MongoDbOptions>("mongo");
-                return options;
 
+                return options;
             }).SingleInstance();
 
             builder.Register(context =>
             {
                 var options = context.Resolve<MongoDbOptions>();
-                return new MongoClient(options.ConnectionString);
 
+                return new MongoClient(options.ConnectionString);
             }).SingleInstance();
 
             builder.Register(context =>
@@ -41,7 +43,7 @@ namespace DShop.Common.Mongo
                 .InstancePerLifetimeScope();
         }
 
-        public static void AddMongoRepository<TEntity>(this ContainerBuilder builder, string collectionName) 
+        public static void AddMongoRepository<TEntity>(this ContainerBuilder builder, string collectionName)
             where TEntity : IIdentifiable
             => builder.Register(ctx => new MongoRepository<TEntity>(ctx.Resolve<IMongoDatabase>(), collectionName))
                 .As<IMongoRepository<TEntity>>()

@@ -1,9 +1,7 @@
-using System;
-
 namespace DShop.Common.Messages
 {
     //Marker
-    public interface IEvent
+    public interface IEvent : IMessage
     {
     }
 }

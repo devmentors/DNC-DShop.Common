@@ -7,6 +7,7 @@ using Newtonsoft.Json.Serialization;
 using Lockbox.Client.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Linq;
@@ -26,6 +27,7 @@ namespace DShop.Common.Mvc
             }
 
             services.AddSingleton<IServiceId, ServiceId>();
+            services.AddTransient<IStartupInitializer, StartupInitializer>();
 
             return services
                 .AddMvcCore()
@@ -35,6 +37,21 @@ namespace DShop.Common.Mvc
                 .AddDefaultJsonOptions()
                 .AddAuthorization();
         }
+
+        public static IServiceCollection AddInitializers(this IServiceCollection services, params Type[] initializers)
+            => initializers == null
+                ? services
+                : services.AddTransient<IStartupInitializer, StartupInitializer>(c =>
+                {
+                    var startupInitializer = new StartupInitializer();
+                    var validInitializers = initializers.Where(t => typeof(IInitializer).IsAssignableFrom(t));
+                    foreach (var initializer in validInitializers)
+                    {
+                        startupInitializer.AddInitializer(c.GetService(initializer) as IInitializer);
+                    }
+
+                    return startupInitializer;
+                });
 
         public static IMvcCoreBuilder AddDefaultJsonOptions(this IMvcCoreBuilder builder)
             => builder.AddJsonOptions(o =>
