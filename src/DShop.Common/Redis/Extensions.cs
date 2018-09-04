@@ -17,9 +17,10 @@ namespace DShop.Common.Redis
 
             services.Configure<RedisOptions>(configuration.GetSection(SectionName));
             var options = configuration.GetOptions<RedisOptions>(SectionName);
-            services.AddDistributedRedisCache(x => 
+            services.AddDistributedRedisCache(o => 
             {
-                x.Configuration = options.ConnectionString;
+                o.Configuration = options.ConnectionString;
+                o.InstanceName = options.Instance;
             });
 
             return services;
