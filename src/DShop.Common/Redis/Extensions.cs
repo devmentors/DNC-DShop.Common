@@ -5,14 +5,18 @@ namespace DShop.Common.Redis
 {
     public static class Extensions
     {
-        public static IServiceCollection AddRedisCache(this IServiceCollection services)
+        private static readonly string SectionName = "redis";
+        
+        public static IServiceCollection AddRedis(this IServiceCollection services)
         {
             IConfiguration configuration;
             using (var serviceProvider = services.BuildServiceProvider())
             {
                 configuration = serviceProvider.GetService<IConfiguration>();
             }
-            var options = configuration.GetOptions<RedisOptions>("redis");
+
+            services.Configure<RedisOptions>(configuration.GetSection(SectionName));
+            var options = configuration.GetOptions<RedisOptions>(SectionName);
             services.AddDistributedRedisCache(x => 
             {
                 x.Configuration = options.ConnectionString;
