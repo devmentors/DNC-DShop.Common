@@ -11,6 +11,8 @@ namespace DShop.Common.Consul
 {
     public static class Extensions
     {
+        private static readonly string SectionName = "consul";
+
         public static IServiceCollection AddConsul(this IServiceCollection services)
         {
             IConfiguration configuration;
@@ -19,7 +21,8 @@ namespace DShop.Common.Consul
                 configuration = serviceProvider.GetService<IConfiguration>();
             }
 
-            services.Configure<ConsulOptions>(configuration.GetSection("consul"));
+            var options = configuration.GetOptions<ConsulOptions>(SectionName);
+            services.Configure<ConsulOptions>(configuration.GetSection(SectionName));
             services.AddTransient<IConsulServicesRegistry, ConsulServicesRegistry>();
             services.AddTransient<ConsulServiceDiscoveryMessageHandler>();
             services.AddHttpClient<ConsulHttpClient>()
@@ -27,7 +30,6 @@ namespace DShop.Common.Consul
 
             return services.AddSingleton<IConsulClient>(c => new ConsulClient(cfg =>
             {
-                var options = c.GetRequiredService<IOptions<ConsulOptions>>().Value;
                 if (!string.IsNullOrEmpty(options.Url))
                 {
                     cfg.Address = new Uri(options.Url);
@@ -40,8 +42,13 @@ namespace DShop.Common.Consul
         {
             using (var scope = app.ApplicationServices.CreateScope())
             {
-                var uniqueId = scope.ServiceProvider.GetService<IServiceId>().Id;
                 var options = scope.ServiceProvider.GetService<IOptions<ConsulOptions>>();
+                if (!options.Value.Enabled)
+                {
+                    return string.Empty;
+                }
+
+                var uniqueId = scope.ServiceProvider.GetService<IServiceId>().Id;
                 var client = scope.ServiceProvider.GetService<IConsulClient>();
                 var serviceName = options.Value.Service;
                 var serviceId = $"{serviceName}:{uniqueId}";

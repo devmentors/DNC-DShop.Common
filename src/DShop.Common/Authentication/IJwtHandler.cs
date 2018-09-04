@@ -6,7 +6,9 @@ namespace DShop.Common.Authentication
 {
     public interface IJwtHandler
     {
-        JsonWebToken CreateToken(Guid userId, string role);
+        JsonWebToken CreateToken(string userId, string role = null,
+            IDictionary<string, string> claims = null);
+
         JsonWebTokenPayload GetTokenPayload(string accessToken);
     }
 }

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using RawRabbit;
 using RawRabbit.Common;
-using RawRabbit.Configuration;
 using RawRabbit.Enrichers.MessageContext;
 using RawRabbit.Instantiation;
 
@@ -21,7 +20,7 @@ namespace DShop.Common.RabbitMq
             builder.Register(context =>
             {
                 var configuration = context.Resolve<IConfiguration>();
-                var rawRabbitConfiguration = configuration.GetOptions<RawRabbitConfiguration>("rawRabbit");
+                var rawRabbitConfiguration = configuration.GetOptions<RabbitMqOptions>("rabbitMq");
                 
                 return rawRabbitConfiguration;
 
@@ -50,7 +49,7 @@ namespace DShop.Common.RabbitMq
                     DependencyInjection = ioc => 
                     {
                         ioc.AddSingleton<INamingConventions, CustomNamingConventions>();
-                        ioc.AddSingleton(context.Resolve<RawRabbitConfiguration>());
+                        ioc.AddSingleton(context.Resolve<RabbitMqOptions>());
                     },
                     Plugins = p => p
                         .UseAttributeRouting()

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
@@ -9,6 +10,15 @@ namespace DShop.Common.Authentication
 {
     public class JwtHandler : IJwtHandler
     {
+        private static readonly ISet<string> DefaultClaims = new HashSet<string>
+        {
+            JwtRegisteredClaimNames.Sub,
+            JwtRegisteredClaimNames.UniqueName,
+            JwtRegisteredClaimNames.Jti,
+            JwtRegisteredClaimNames.Iat,
+            ClaimTypes.Role,
+        };
+
         private readonly JwtSecurityTokenHandler _jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
         private readonly JwtOptions _options;
         private readonly SigningCredentials _signingCredentials;
@@ -26,24 +36,36 @@ namespace DShop.Common.Authentication
                 ValidAudience = _options.ValidAudience,
                 ValidateAudience = _options.ValidateAudience,
                 ValidateLifetime = _options.ValidateLifetime
-            }; 
+            };
         }
 
-        public JsonWebToken CreateToken(Guid userId, string role)
+        public JsonWebToken CreateToken(string userId, string role = null,
+            IDictionary<string, string> claims = null)
         {
-            var now = DateTime.UtcNow;
-            var claims = new[]
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-                new Claim(JwtRegisteredClaimNames.UniqueName, userId.ToString()),
+                throw new ArgumentException("User id claim can not be empty.", nameof(userId));
+            }
+
+            var now = DateTime.UtcNow;
+            var jwtClaims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, userId),
+                new Claim(JwtRegisteredClaimNames.UniqueName, userId),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Iat, now.ToTimestamp().ToString()),
-                new Claim(ClaimTypes.Role, role)
             };
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                jwtClaims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            jwtClaims.AddRange(claims?.Select(claim => new Claim(claim.Key, claim.Value))
+                               ?? Enumerable.Empty<Claim>());
             var expires = now.AddMinutes(_options.ExpiryMinutes);
             var jwt = new JwtSecurityToken(
                 issuer: _options.Issuer,
-                claims: claims,
+                claims: jwtClaims,
                 notBefore: now,
                 expires: expires,
                 signingCredentials: _signingCredentials
@@ -59,19 +81,20 @@ namespace DShop.Common.Authentication
 
         public JsonWebTokenPayload GetTokenPayload(string accessToken)
         {
-
-            _jwtSecurityTokenHandler.ValidateToken(accessToken, _tokenValidationParameters, 
-                out SecurityToken validatedSecurityToken);
+            _jwtSecurityTokenHandler.ValidateToken(accessToken, _tokenValidationParameters,
+                out var validatedSecurityToken);
             if (!(validatedSecurityToken is JwtSecurityToken jwt))
             {
                 return null;
             }
-    
+
             return new JsonWebTokenPayload
             {
                 Subject = jwt.Subject,
-                Role = jwt.Claims.Single(x => x.Type == ClaimTypes.Role).Value,
-                Expires = jwt.ValidTo.ToTimestamp()
+                Role = jwt.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Role)?.Value,
+                Expires = jwt.ValidTo.ToTimestamp(),
+                Claims = jwt.Claims.Where(x => !DefaultClaims.Contains(x.Type))
+                    .ToDictionary(k => k.Type, v => v.Value)
             };
         }
     }
