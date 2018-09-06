@@ -26,7 +26,14 @@ namespace DShop.Common.RabbitMq
                 var options = configuration.GetOptions<RabbitMqOptions>("rabbitMq");
 
                 return options;
+            }).SingleInstance();
+            
+            builder.Register(context =>
+            {
+                var configuration = context.Resolve<IConfiguration>();
+                var options = configuration.GetOptions<RawRabbitConfiguration>("rabbitMq");
 
+                return options;
             }).SingleInstance();
 
             var assembly = Assembly.GetCallingAssembly();
@@ -49,6 +56,7 @@ namespace DShop.Common.RabbitMq
             builder.Register<IInstanceFactory>(context =>
             {
                 var options = context.Resolve<RabbitMqOptions>();
+                var configuration = context.Resolve<RawRabbitConfiguration>();
                 var namingConventions = new CustomNamingConventions(options.Namespace);
 
                 return RawRabbitFactory.CreateInstanceFactory(new RawRabbitOptions
@@ -56,6 +64,7 @@ namespace DShop.Common.RabbitMq
                     DependencyInjection = ioc =>
                     {
                         ioc.AddSingleton(options);
+                        ioc.AddSingleton(configuration);
                         ioc.AddSingleton<INamingConventions>(namingConventions);
                     },
                     Plugins = p => p
