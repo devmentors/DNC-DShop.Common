@@ -43,7 +43,13 @@ namespace DShop.Common.Consul
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 var options = scope.ServiceProvider.GetService<IOptions<ConsulOptions>>();
-                if (!options.Value.Enabled)
+                var enabled = options.Value.Enabled;
+                var consulEnabled = Environment.GetEnvironmentVariable("CONSUL_ENABLED")?.ToLowerInvariant();
+                if (!string.IsNullOrWhiteSpace(consulEnabled))
+                {
+                    enabled = consulEnabled == "true" || consulEnabled == "1";
+                }
+                if (!enabled)
                 {
                     return string.Empty;
                 }
