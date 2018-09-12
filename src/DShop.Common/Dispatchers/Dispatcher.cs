@@ -19,7 +19,7 @@ namespace DShop.Common.Dispatchers
         public async Task SendAsync<TCommand>(TCommand command) where TCommand : ICommand
             => await _commandDispatcher.SendAsync(command);
 
-        public async Task<TResult> QueryAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery<TResult>
-            => await _queryDispatcher.QueryAsync<TQuery, TResult>(query);
+        public async Task<TResult> QueryAsync<TResult>(IQuery<TResult> query)
+            => await _queryDispatcher.QueryAsync<TResult>(query);
     }
 }
