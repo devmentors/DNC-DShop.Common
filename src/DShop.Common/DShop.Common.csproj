@@ -59,7 +59,7 @@
     <PackageReference Include="Serilog.Sinks.Seq" Version="4.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="3.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="3.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="4.2.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="4.3.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="3.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="3.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="3.0.0" />
