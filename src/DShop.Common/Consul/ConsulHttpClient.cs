@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace DShop.Common.Consul
 {
-    public class ConsulHttpClient
+    public class ConsulHttpClient : IConsulHttpClient
     {
         private HttpClient _client;
 

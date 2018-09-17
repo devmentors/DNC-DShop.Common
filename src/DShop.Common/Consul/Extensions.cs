@@ -25,7 +25,7 @@ namespace DShop.Common.Consul
             services.Configure<ConsulOptions>(configuration.GetSection(SectionName));
             services.AddTransient<IConsulServicesRegistry, ConsulServicesRegistry>();
             services.AddTransient<ConsulServiceDiscoveryMessageHandler>();
-            services.AddHttpClient<ConsulHttpClient>()
+            services.AddHttpClient<IConsulHttpClient, ConsulHttpClient>()
                 .AddHttpMessageHandler<ConsulServiceDiscoveryMessageHandler>();
 
             return services.AddSingleton<IConsulClient>(c => new ConsulClient(cfg =>
