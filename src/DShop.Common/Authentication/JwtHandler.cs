@@ -59,9 +59,9 @@ namespace DShop.Common.Authentication
             {
                 jwtClaims.Add(new Claim(ClaimTypes.Role, role));
             }
-
-            jwtClaims.AddRange(claims?.Select(claim => new Claim(claim.Key, claim.Value))
-                               ?? Enumerable.Empty<Claim>());
+            var customClaims = claims?.Select(claim => new Claim(claim.Key, claim.Value))
+                               ?? Enumerable.Empty<Claim>();
+            jwtClaims.AddRange(customClaims);
             var expires = now.AddMinutes(_options.ExpiryMinutes);
             var jwt = new JwtSecurityToken(
                 issuer: _options.Issuer,
@@ -75,7 +75,10 @@ namespace DShop.Common.Authentication
             return new JsonWebToken
             {
                 AccessToken = token,
-                Expires = expires.ToTimestamp()
+                RefreshToken = string.Empty,
+                Expires = expires.ToTimestamp(),
+                Role = role ?? string.Empty,
+                Claims = customClaims.ToDictionary(c => c.Type, c => c.Value)
             };
         }
 

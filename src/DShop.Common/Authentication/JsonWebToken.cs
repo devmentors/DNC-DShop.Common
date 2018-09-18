@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace DShop.Common.Authentication
 {
@@ -7,5 +8,7 @@ namespace DShop.Common.Authentication
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
         public long Expires { get; set; }
+        public string Role { get; set; }
+        public IDictionary<string, string> Claims { get; set; }
     }
 }

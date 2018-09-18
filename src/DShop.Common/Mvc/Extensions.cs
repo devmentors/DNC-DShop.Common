@@ -28,6 +28,7 @@ namespace DShop.Common.Mvc
 
             services.AddSingleton<IServiceId, ServiceId>();
             services.AddTransient<IStartupInitializer, StartupInitializer>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             return services
                 .AddMvcCore()
