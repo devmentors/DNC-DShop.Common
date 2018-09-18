@@ -30,7 +30,7 @@ namespace DShop.Common.Mongo
 				TQuery query) where TQuery : PagedQueryBase
 			=> await Collection.AsQueryable().Where(predicate).PaginateAsync(query);
 
-		public async Task CreateAsync(TEntity entity)
+		public async Task AddAsync(TEntity entity)
 			=> await Collection.InsertOneAsync(entity);
 
 		public async Task UpdateAsync(TEntity entity)
