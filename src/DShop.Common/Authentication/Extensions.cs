@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -8,6 +9,8 @@ namespace DShop.Common.Authentication
 {
     public static class Extensions
     {
+        private static readonly string SectionName = "jwt";
+
         public static void AddJwt(this IServiceCollection services)
         {
             IConfiguration configuration;
@@ -15,9 +18,13 @@ namespace DShop.Common.Authentication
             {
                 configuration = serviceProvider.GetService<IConfiguration>();
             }
-            var options = configuration.GetOptions<JwtOptions>("jwt");
+            var section = configuration.GetSection(SectionName);
+            var options = configuration.GetOptions<JwtOptions>(SectionName);
+            services.Configure<JwtOptions>(section);
             services.AddSingleton(options);
             services.AddSingleton<IJwtHandler, JwtHandler>();
+            services.AddTransient<IAccessTokenService, AccessTokenService>();
+            services.AddTransient<AccessTokenValidatorMiddleware>();
             services.AddAuthentication()
                 .AddJwtBearer(cfg =>
                 {
@@ -31,6 +38,9 @@ namespace DShop.Common.Authentication
                     };
                 });
         }
+
+        public static IApplicationBuilder UseAccessTokenValidator(this IApplicationBuilder app)
+            => app.UseMiddleware<AccessTokenValidatorMiddleware>();
 
         public static long ToTimestamp(this DateTime dateTime)
         {
