@@ -14,6 +14,11 @@ namespace DShop.Common.Handlers
         private bool _rethrowException;
         private bool _rethrowCustomException;
 
+        public Handler()
+        {
+            _always = () => Task.CompletedTask;
+        }
+
         public IHandler Handle(Func<Task> handle)
         {
             _handle = handle;
