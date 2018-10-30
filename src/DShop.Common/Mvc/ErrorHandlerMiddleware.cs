@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using DShop.Common.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace DShop.Common.Mvc
@@ -10,10 +11,13 @@ namespace DShop.Common.Mvc
     public class ErrorHandlerMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly ILogger<ErrorHandlerMiddleware> _logger;
 
-        public ErrorHandlerMiddleware(RequestDelegate next)
+        public ErrorHandlerMiddleware(RequestDelegate next, 
+            ILogger<ErrorHandlerMiddleware> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public async Task Invoke(HttpContext context)
@@ -24,6 +28,7 @@ namespace DShop.Common.Mvc
             }
             catch (Exception exception)
             {
+                _logger.LogError(exception, exception.Message);
                 await HandleErrorAsync(context, exception);
             }
         }

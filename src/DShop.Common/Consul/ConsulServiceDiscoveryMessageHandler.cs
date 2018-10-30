@@ -19,6 +19,11 @@ namespace DShop.Common.Consul
         public ConsulServiceDiscoveryMessageHandler(IConsulServicesRegistry servicesRegistry,
             IOptions<ConsulOptions> options, string serviceName = null, bool? overrideRequestUri = null)
         {
+            if (string.IsNullOrWhiteSpace(options.Value.Url))
+            {
+                throw new InvalidOperationException("Consul URL was not provided.");
+            }
+
             _servicesRegistry = servicesRegistry;
             _options = options;
             _serviceName = serviceName;

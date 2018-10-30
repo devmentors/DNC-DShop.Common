@@ -5,7 +5,7 @@ namespace DShop.Common.RestEase
 {
     public class RestEaseOptions
     {
-        public bool UseConsul { get; set; }
+        public string LoadBalancer { get; set; }
         public IEnumerable<Service> Services { get; set; }
 
         public class Service

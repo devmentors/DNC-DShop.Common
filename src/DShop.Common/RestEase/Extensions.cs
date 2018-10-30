@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using DShop.Common.Consul;
+using DShop.Common.Fabio;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -16,13 +17,17 @@ namespace DShop.Common.RestEase
         {
             var clientName = typeof(T).ToString();
             var options = ConfigureOptions(services);
-            if (options.UseConsul)
+            switch (options.LoadBalancer?.ToLowerInvariant())
             {
-                ConfigureConsulClient(services, clientName, serviceName);
-            }
-            else
-            {
-                ConfigureDefaultClient(services, clientName, serviceName, options);
+                case "consul":
+                    ConfigureConsulClient(services, clientName, serviceName);
+                    break;
+                case "fabio":
+                    ConfigureFabioClient(services, clientName, serviceName);
+                    break;
+                default:
+                    ConfigureDefaultClient(services, clientName, serviceName, options);
+                    break;
             }
 
             ConfigureForwarder<T>(services, clientName);
@@ -48,6 +53,14 @@ namespace DShop.Common.RestEase
                 .AddHttpMessageHandler(c =>
                     new ConsulServiceDiscoveryMessageHandler(c.GetService<IConsulServicesRegistry>(),
                         c.GetService<IOptions<ConsulOptions>>(), serviceName, overrideRequestUri: true));
+        }
+
+        private static void ConfigureFabioClient(IServiceCollection services, string clientName,
+            string serviceName)
+        {
+            services.AddHttpClient(clientName)
+                .AddHttpMessageHandler(c =>
+                    new FabioMessageHandler(c.GetService<IOptions<FabioOptions>>(), serviceName));
         }
 
         private static void ConfigureDefaultClient(IServiceCollection services, string clientName,
