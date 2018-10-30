@@ -3,7 +3,6 @@ using Consul;
 using DShop.Common.Fabio;
 using DShop.Common.Mvc;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -59,15 +58,20 @@ namespace DShop.Common.Consul
                     return string.Empty;
                 }
 
+
+                var address = consulOptions.Value.Address;
+                if (string.IsNullOrWhiteSpace(address))
+                {
+                    throw new ArgumentException("Consul address can not be empty.",
+                        nameof(consulOptions.Value.PingEndpoint));
+                }
+
                 var uniqueId = scope.ServiceProvider.GetService<IServiceId>().Id;
                 var client = scope.ServiceProvider.GetService<IConsulClient>();
                 var serviceName = consulOptions.Value.Service;
                 var serviceId = $"{serviceName}:{uniqueId}";
-                var address = consulOptions.Value.Address;
                 var port = consulOptions.Value.Port;
-                var pingEndpoint = string.IsNullOrWhiteSpace(consulOptions.Value.PingEndpoint)
-                    ? "ping"
-                    : consulOptions.Value.PingEndpoint;
+                var pingEndpoint = consulOptions.Value.PingEndpoint;
                 var pingInterval = consulOptions.Value.PingInterval <= 0 ? 5 : consulOptions.Value.PingInterval;
                 var removeAfterInterval =
                     consulOptions.Value.RemoveAfterInterval <= 0 ? 10 : consulOptions.Value.RemoveAfterInterval;
