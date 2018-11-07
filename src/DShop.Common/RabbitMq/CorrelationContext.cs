@@ -1,6 +1,5 @@
 ﻿using System;
 using Newtonsoft.Json;
-using RawRabbit.Common;
 
 namespace DShop.Common.RabbitMq
 {

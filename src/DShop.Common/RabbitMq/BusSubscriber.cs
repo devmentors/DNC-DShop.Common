@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using DShop.Common.Handlers;
 using DShop.Common.Messages;
@@ -10,11 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RawRabbit;
 using RawRabbit.Common;
-using RawRabbit.Enrichers.MessageContext.Subscribe;
-using RawRabbit.Pipe;
-using RawRabbit.Pipe.Middleware;
 
-namespace DShop.Common.RabbitMq {
+namespace DShop.Common.RabbitMq
+{
     public class BusSubscriber : IBusSubscriber
     {
         private readonly ILogger _logger;
@@ -36,77 +33,88 @@ namespace DShop.Common.RabbitMq {
         }
 
         public IBusSubscriber SubscribeCommand<TCommand>(string @namespace = null, string queueName = null,
-            Func<TCommand, DShopException, IRejectedEvent> onFailure = null)
+            Func<TCommand, DShopException, IRejectedEvent> onError = null)
             where TCommand : ICommand
         {
             _busClient.SubscribeAsync<TCommand, CorrelationContext>(async (command, correlationContext) =>
                 {
-                    var commandName = command.GetType().Name;
-                    var retryMessage = correlationContext.Retries == 0
-                        ? string.Empty
-                        : $"Retry: {correlationContext.Retries}'.";
-                    _logger.LogInformation(
-                        $"Handling command: '{commandName}' with correlation id: '{correlationContext.Id}'. {retryMessage}");
                     var commandHandler = _serviceProvider.GetService<ICommandHandler<TCommand>>();
-                    try
-                    {
-                        await commandHandler.HandleAsync(command, correlationContext);
-                        _logger.LogInformation(
-                            $"Handled command: '{commandName}' with correlation id: '{correlationContext.Id}'. {retryMessage}");
 
-                        return new Ack();
-                    }
-                    catch (Exception exception)
-                    {
-                        // if (exception is DShopException dShopException && onFailure != null)
-                        // {
-                        //     var rejectedEvent = onFailure(command, dShopException);
-                        //     await _busClient.PublishAsync(rejectedEvent);
-                        //     _logger.LogInformation($"Published rejected event: '{rejectedEvent.GetType().Name}' " +
-                        //                            $"for command: '{commandName}' with correlation id: '{correlationContext.Id}'.");
-
-                        //     return new Ack();
-                        // }
-
-                        if (_retries == 0)
-                        {
-                            throw;
-                        }
-
-                        if (correlationContext.Retries >= _retries)
-                        {
-                            throw new Exception(
-                                $"Unable to handle command: '{commandName}' with correlation id: '{correlationContext.Id}' " +
-                                $"after {correlationContext.Retries} retries.", exception);
-                        }
-
-                        _logger.LogInformation(
-                            $"Unable to handle command: '{commandName}' with correlation id: '{correlationContext.Id}', " +
-                            $"retry {correlationContext.Retries}/{_retries}...");
-
-                        return Retry.In(TimeSpan.FromSeconds(_retryInterval));
-                    }
+                    return await TryHandleAsync(command, correlationContext,
+                        () => commandHandler.HandleAsync(command, correlationContext), onError);
                 },
                 ctx => ctx.UseSubscribeConfiguration(cfg =>
-                            cfg.FromDeclaredQueue(q => q.WithName(GetQueueName<TCommand>(@namespace, queueName)))));
+                    cfg.FromDeclaredQueue(q => q.WithName(GetQueueName<TCommand>(@namespace, queueName)))));
 
             return this;
         }
 
         public IBusSubscriber SubscribeEvent<TEvent>(string @namespace = null, string queueName = null,
-            Func<TEvent, DShopException, IRejectedEvent> onFailure = null)
+            Func<TEvent, DShopException, IRejectedEvent> onError = null)
             where TEvent : IEvent
         {
-            _busClient.SubscribeAsync<TEvent, CorrelationContext>((@event, correlationContext) =>
+            _busClient.SubscribeAsync<TEvent, CorrelationContext>(async (@event, correlationContext) =>
                 {
                     var eventHandler = _serviceProvider.GetService<IEventHandler<TEvent>>();
 
-                    return eventHandler.HandleAsync(@event, correlationContext);
+                    return await TryHandleAsync(@event, correlationContext,
+                        () => eventHandler.HandleAsync(@event, correlationContext), onError);
                 },
                 ctx => ctx.UseSubscribeConfiguration(cfg =>
                     cfg.FromDeclaredQueue(q => q.WithName(GetQueueName<TEvent>(@namespace, queueName)))));
 
             return this;
+        }
+
+        private async Task<Acknowledgement> TryHandleAsync<TMessage>(TMessage message,
+            CorrelationContext correlationContext,
+            Func<Task> handle, Func<TMessage, DShopException, IRejectedEvent> onError = null)
+        {
+            var messageName = message.GetType().Name;
+            var retryMessage = correlationContext.Retries == 0
+                ? string.Empty
+                : $"Retry: {correlationContext.Retries}'.";
+            _logger.LogInformation($"Handling a message: '{messageName}' " +
+                                   $"with correlation id: '{correlationContext.Id}'. {retryMessage}");
+
+            try
+            {
+                await handle();
+                _logger.LogInformation($"Handled a message: '{messageName}' " +
+                                       $"with correlation id: '{correlationContext.Id}'. {retryMessage}");
+
+                return new Ack();
+            }
+            catch (Exception exception)
+            {
+                if (exception is DShopException dShopException && onError != null)
+                {
+                    var rejectedEvent = onError(message, dShopException);
+                    await _busClient.PublishAsync(rejectedEvent);
+                    _logger.LogInformation($"Published a rejected event: '{rejectedEvent.GetType().Name}' " +
+                                           $"for the message: '{messageName}' with correlation id: '{correlationContext.Id}'.");
+
+                    return new Ack();
+                }
+
+                if (_retries == 0)
+                {
+                    throw;
+                }
+
+                if (correlationContext.Retries >= _retries)
+                {
+                    throw new Exception($"Unable to handle a message: '{messageName}' " +
+                                        $"with correlation id: '{correlationContext.Id}' " +
+                                        $"after {correlationContext.Retries} retries.", exception);
+                }
+
+                _logger.LogInformation($"Unable to handle a message: '{messageName}' " +
+                                       $"with correlation id: '{correlationContext.Id}', " +
+                                       $"retry {correlationContext.Retries}/{_retries}...");
+
+                return Retry.In(TimeSpan.FromSeconds(_retryInterval));
+            }
         }
 
         private string GetQueueName<T>(string @namespace = null, string name = null)

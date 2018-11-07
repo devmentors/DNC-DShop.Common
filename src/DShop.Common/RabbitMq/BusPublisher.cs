@@ -5,7 +5,7 @@ using RawRabbit.Enrichers.MessageContext;
 
 namespace DShop.Common.RabbitMq
 {
-    internal class BusPublisher : IBusPublisher
+    public class BusPublisher : IBusPublisher
     {
         private readonly IBusClient _busClient;
 

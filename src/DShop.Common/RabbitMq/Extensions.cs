@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
@@ -8,17 +7,13 @@ using DShop.Common.Handlers;
 using DShop.Common.Messages;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using RawRabbit;
 using RawRabbit.Common;
 using RawRabbit.Configuration;
 using RawRabbit.Enrichers.MessageContext;
-using RawRabbit.Enrichers.MessageContext.Subscribe;
 using RawRabbit.Instantiation;
 using RawRabbit.Pipe;
 using RawRabbit.Pipe.Middleware;
-using RawRabbit.Serialization;
 
 namespace DShop.Common.RabbitMq
 {
@@ -36,7 +31,7 @@ namespace DShop.Common.RabbitMq
 
                 return options;
             }).SingleInstance();
-            
+
             builder.Register(context =>
             {
                 var configuration = context.Resolve<IConfiguration>();
@@ -75,7 +70,6 @@ namespace DShop.Common.RabbitMq
                         ioc.AddSingleton(options);
                         ioc.AddSingleton(configuration);
                         ioc.AddSingleton<INamingConventions>(namingConventions);
-                        ioc.AddSingleton<ISerializer, CustomSerializer>();
                     },
                     Plugins = p => p
                         .UseAttributeRouting()
@@ -106,16 +100,20 @@ namespace DShop.Common.RabbitMq
                 return string.IsNullOrWhiteSpace(@namespace) ? string.Empty : $"{@namespace}.";
             }
         }
-        
+
         private class RetryStagedMiddleware : StagedMiddleware
         {
             public override string StageMarker { get; } = RawRabbit.Pipe.StageMarker.MessageDeserialized;
 
-            public override async Task InvokeAsync(IPipeContext context, CancellationToken token = new CancellationToken())
+            public override async Task InvokeAsync(IPipeContext context,
+                CancellationToken token = new CancellationToken())
             {
                 var retry = context.GetRetryInformation();
-                var message = context.GetMessageContext() as CorrelationContext;
-                message.Retries = retry.NumberOfRetries;
+                if (context.GetMessageContext() is CorrelationContext message)
+                {
+                    message.Retries = retry.NumberOfRetries;
+                }
+
                 await Next.InvokeAsync(context, token);
             }
         }
@@ -125,24 +123,6 @@ namespace DShop.Common.RabbitMq
             clientBuilder.Register(c => c.Use<RetryStagedMiddleware>());
 
             return clientBuilder;
-        }
-
-        public class CustomSerializer : RawRabbit.Serialization.JsonSerializer
-        {
-            public CustomSerializer() : base(new Newtonsoft.Json.JsonSerializer
-            {
-                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
-                Formatting = Formatting.None,
-                CheckAdditionalContent = true,
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                ObjectCreationHandling = ObjectCreationHandling.Auto,
-                DefaultValueHandling = DefaultValueHandling.Ignore,
-                TypeNameHandling = TypeNameHandling.Auto,
-                ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-                MissingMemberHandling = MissingMemberHandling.Ignore,
-                PreserveReferencesHandling = PreserveReferencesHandling.Objects,
-                NullValueHandling = NullValueHandling.Ignore
-            }) { }
         }
     }
 }
