@@ -10,7 +10,7 @@ namespace DShop.Common.Vault
         {
         }
 
-        public VaultException(Exception innerException ,string key) : this(string.Empty, innerException, key)
+        public VaultException(Exception innerException, string key) : this(string.Empty, innerException, key)
         {
         }
 

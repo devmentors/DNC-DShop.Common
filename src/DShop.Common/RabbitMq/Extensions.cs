@@ -1,15 +1,24 @@
 using System;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters;
+using System.Threading;
+using System.Threading.Tasks;
 using Autofac;
 using DShop.Common.Handlers;
 using DShop.Common.Messages;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using RawRabbit;
 using RawRabbit.Common;
 using RawRabbit.Configuration;
 using RawRabbit.Enrichers.MessageContext;
+using RawRabbit.Enrichers.MessageContext.Subscribe;
 using RawRabbit.Instantiation;
+using RawRabbit.Pipe;
+using RawRabbit.Pipe.Middleware;
+using RawRabbit.Serialization;
 
 namespace DShop.Common.RabbitMq
 {
@@ -66,9 +75,12 @@ namespace DShop.Common.RabbitMq
                         ioc.AddSingleton(options);
                         ioc.AddSingleton(configuration);
                         ioc.AddSingleton<INamingConventions>(namingConventions);
+                        ioc.AddSingleton<ISerializer, CustomSerializer>();
                     },
                     Plugins = p => p
                         .UseAttributeRouting()
+                        .UseRetryLater()
+                        .UpdateRetryInfo()
                         .UseMessageContext<CorrelationContext>()
                         .UseContextForwarding()
                 });
@@ -81,6 +93,7 @@ namespace DShop.Common.RabbitMq
             public CustomNamingConventions(string defaultNamespace)
             {
                 ExchangeNamingConvention = type => GetExchangeName(defaultNamespace, type);
+                RoutingKeyConvention = type => type.Name.Underscore().ToLowerInvariant();
             }
 
             private static string GetExchangeName(string defaultNamespace, Type type)
@@ -92,6 +105,44 @@ namespace DShop.Common.RabbitMq
 
                 return string.IsNullOrWhiteSpace(@namespace) ? string.Empty : $"{@namespace}.";
             }
+        }
+        
+        private class RetryStagedMiddleware : StagedMiddleware
+        {
+            public override string StageMarker { get; } = RawRabbit.Pipe.StageMarker.MessageDeserialized;
+
+            public override async Task InvokeAsync(IPipeContext context, CancellationToken token = new CancellationToken())
+            {
+                var retry = context.GetRetryInformation();
+                var message = context.GetMessageContext() as CorrelationContext;
+                message.Retries = retry.NumberOfRetries;
+                await Next.InvokeAsync(context, token);
+            }
+        }
+
+        private static IClientBuilder UpdateRetryInfo(this IClientBuilder clientBuilder)
+        {
+            clientBuilder.Register(c => c.Use<RetryStagedMiddleware>());
+
+            return clientBuilder;
+        }
+
+        public class CustomSerializer : RawRabbit.Serialization.JsonSerializer
+        {
+            public CustomSerializer() : base(new Newtonsoft.Json.JsonSerializer
+            {
+                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
+                Formatting = Formatting.None,
+                CheckAdditionalContent = true,
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                ObjectCreationHandling = ObjectCreationHandling.Auto,
+                DefaultValueHandling = DefaultValueHandling.Ignore,
+                TypeNameHandling = TypeNameHandling.Auto,
+                ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+                MissingMemberHandling = MissingMemberHandling.Ignore,
+                PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+                NullValueHandling = NullValueHandling.Ignore
+            }) { }
         }
     }
 }
