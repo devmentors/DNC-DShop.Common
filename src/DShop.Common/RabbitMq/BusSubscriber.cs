@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RawRabbit;
 using RawRabbit.Common;
+using RawRabbit.Enrichers.MessageContext;
 
 namespace DShop.Common.RabbitMq
 {
@@ -90,20 +91,18 @@ namespace DShop.Common.RabbitMq
                 if (exception is DShopException dShopException && onError != null)
                 {
                     var rejectedEvent = onError(message, dShopException);
-                    await _busClient.PublishAsync(rejectedEvent);
+                    await _busClient.PublishAsync(rejectedEvent, ctx => ctx.UseMessageContext(correlationContext));
                     _logger.LogInformation($"Published a rejected event: '{rejectedEvent.GetType().Name}' " +
                                            $"for the message: '{messageName}' with correlation id: '{correlationContext.Id}'.");
 
                     return new Ack();
                 }
 
-                if (_retries == 0)
-                {
-                    throw;
-                }
-
                 if (correlationContext.Retries >= _retries)
                 {
+                    await _busClient.PublishAsync(RejectedEvent.For(messageName),
+                        ctx => ctx.UseMessageContext(correlationContext));
+
                     throw new Exception($"Unable to handle a message: '{messageName}' " +
                                         $"with correlation id: '{correlationContext.Id}' " +
                                         $"after {correlationContext.Retries} retries.", exception);
