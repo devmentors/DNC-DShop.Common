@@ -88,6 +88,7 @@ namespace DShop.Common.RabbitMq
             }
             catch (Exception exception)
             {
+                _logger.LogError(exception, exception.Message);
                 if (exception is DShopException dShopException && onError != null)
                 {
                     var rejectedEvent = onError(message, dShopException);
