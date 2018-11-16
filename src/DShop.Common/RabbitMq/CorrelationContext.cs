@@ -21,6 +21,11 @@ namespace DShop.Common.RabbitMq
         {
         }
 
+        private CorrelationContext(Guid id)
+        {
+            Id = id;
+        }
+
         [JsonConstructor]
         private CorrelationContext(Guid id, Guid userId, Guid resourceId, string traceId,
             string connectionId, string executionId, string name, string origin, string culture, string resource, int retries)
@@ -41,6 +46,9 @@ namespace DShop.Common.RabbitMq
 
         public static ICorrelationContext Empty
             => new CorrelationContext();
+        
+        public static ICorrelationContext FromId(Guid id)
+            => new CorrelationContext(id);
 
         public static ICorrelationContext From<T>(ICorrelationContext context)
             => Create<T>(context.Id, context.UserId, context.ResourceId, context.TraceId, context.ConnectionId,
