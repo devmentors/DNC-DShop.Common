@@ -1,6 +1,17 @@
+
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Description>DShop Common</Description>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <Authors>DevMentors.io</Authors>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <AssemblyName>DShop.Common</AssemblyName>
+    <Title>DShop.Common_</Title>
+    <PackageId>DShop.Common_</PackageId>
+    <PackageTags>DShop.Common_</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="App.Metrics.AspNetCore" Version="2.0.0" />
