@@ -87,7 +87,10 @@ namespace DShop.Common.RabbitMq
             public CustomNamingConventions(string defaultNamespace)
             {
                 ExchangeNamingConvention = type => GetExchangeName(defaultNamespace, type);
-                RoutingKeyConvention = type => type.Name.Underscore().ToLowerInvariant();
+                RoutingKeyConvention = type => $"{GetNamespace(defaultNamespace, type)}{type.Name.Underscore().ToLowerInvariant()}";
+                ErrorExchangeNamingConvention = () => $"error_exchange_for_{defaultNamespace}";
+                RetryLaterExchangeConvention = span => $"retry_later_exchange_for_{defaultNamespace}";
+                RetryLaterQueueNameConvetion = (exchange, span) => $"retry_for_{defaultNamespace}_{exchange.Replace(".","_")}_in_{span.TotalMilliseconds}_ms";
             }
 
             private static string GetExchangeName(string defaultNamespace, Type type)
