@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,7 +7,9 @@ using Autofac;
 using DShop.Common.Handlers;
 using DShop.Common.Messages;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Configuration;
+using RabbitMQ.Client.Events;
 using RawRabbit;
 using RawRabbit.Common;
 using RawRabbit.Configuration;
@@ -86,21 +89,27 @@ namespace DShop.Common.RabbitMq
         {
             public CustomNamingConventions(string defaultNamespace)
             {
-                ExchangeNamingConvention = type => GetExchangeName(defaultNamespace, type);
-                RoutingKeyConvention = type => $"{GetNamespace(defaultNamespace, type)}{type.Name.Underscore().ToLowerInvariant()}";
-                ErrorExchangeNamingConvention = () => $"error_exchange_for_{defaultNamespace}";
-                RetryLaterExchangeConvention = span => $"retry_later_exchange_for_{defaultNamespace}";
-                RetryLaterQueueNameConvetion = (exchange, span) => $"retry_for_{defaultNamespace}_{exchange.Replace(".","_")}_in_{span.TotalMilliseconds}_ms";
+                ExchangeNamingConvention = type => GetNamespace(type, defaultNamespace).ToLowerInvariant();
+                RoutingKeyConvention = type =>
+                    $"#.{GetRoutingKeyNamespace(type, defaultNamespace)}{type.Name.Underscore()}".ToLowerInvariant();
+                ErrorExchangeNamingConvention = () => $"{defaultNamespace}.error";
+                RetryLaterExchangeConvention = span => $"{defaultNamespace}.retry";
+                RetryLaterQueueNameConvetion = (exchange, span) =>
+                    $"{defaultNamespace}.retry_for_{exchange.Replace(".", "_")}_in_{span.TotalMilliseconds}_ms".ToLowerInvariant();
             }
 
-            private static string GetExchangeName(string defaultNamespace, Type type)
-                => $"{GetNamespace(defaultNamespace, type)}{type.Name.Underscore()}".ToLowerInvariant();
-
-            private static string GetNamespace(string defaultNamespace, Type type)
+            private static string GetRoutingKeyNamespace(Type type, string defaultNamespace)
             {
                 var @namespace = type.GetCustomAttribute<MessageNamespaceAttribute>()?.Namespace ?? defaultNamespace;
 
                 return string.IsNullOrWhiteSpace(@namespace) ? string.Empty : $"{@namespace}.";
+            }
+            
+            private static string GetNamespace(Type type, string defaultNamespace)
+            {
+                var @namespace = type.GetCustomAttribute<MessageNamespaceAttribute>()?.Namespace ?? defaultNamespace;
+
+                return string.IsNullOrWhiteSpace(@namespace) ? "#" : $"{@namespace}";
             }
         }
 
