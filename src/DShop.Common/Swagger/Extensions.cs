@@ -58,7 +58,7 @@ namespace DShop.Common.Swagger
                 ? builder.UseReDoc(c =>
                 {
                     c.RoutePrefix = routePrefix;
-                    c.SpecUrl = "v1/swagger.json";
+                    c.SpecUrl = $"{options.Name}/swagger.json";
                 })
                 : builder.UseSwaggerUI(c =>
                 {
