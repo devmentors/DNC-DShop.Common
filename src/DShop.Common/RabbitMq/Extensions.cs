@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,9 +6,7 @@ using Autofac;
 using DShop.Common.Handlers;
 using DShop.Common.Messages;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Configuration;
-using RabbitMQ.Client.Events;
 using RawRabbit;
 using RawRabbit.Common;
 using RawRabbit.Configuration;

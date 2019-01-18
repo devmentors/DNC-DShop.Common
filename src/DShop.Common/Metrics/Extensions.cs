@@ -10,46 +10,71 @@ namespace DShop.Common.Metrics
     public static class Extensions
     {
         public static IWebHostBuilder UseAppMetrics(this IWebHostBuilder webHostBuilder)
-            => webHostBuilder.ConfigureMetricsWithDefaults((context, builder) =>
+            => webHostBuilder
+                .ConfigureMetricsWithDefaults((context, builder) =>
+                {
+                    var metricsOptions = context.Configuration.GetOptions<MetricsOptions>("metrics");
+                    if (!metricsOptions.Enabled)
                     {
-                        var options = context.Configuration.GetOptions<MetricsOptions>("metrics");
-                        if (!options.Enabled)
-                        {
-                            return;
-                        }
-
-                        if (options.InfluxEnabled)
-                        {
-                            builder.Report.ToInfluxDb(o =>
-                            {
-                                o.InfluxDb.Database = options.Database;
-                                o.InfluxDb.BaseUri = new Uri(options.InfluxUrl);
-                                o.InfluxDb.CreateDataBaseIfNotExists = true;
-                                o.FlushInterval = TimeSpan.FromSeconds(options.Interval);
-                            });
-                        }
-
-                        if (options.PrometheusEnabled)
-                        {
-
-                            builder
-                                .OutputMetrics.AsPrometheusPlainText()
-                                .OutputMetrics.AsPrometheusProtobuf();
-                        }
+                        return;
                     }
-                )
+
+                    builder.Configuration.Configure(cfg =>
+                        {
+                            var tags = metricsOptions.Tags;
+                            if (tags == null)
+                            {
+                                return;
+                            }
+
+                            tags.TryGetValue("app", out var app);
+                            tags.TryGetValue("env", out var env);
+                            tags.TryGetValue("server", out var server);
+                            cfg.AddAppTag(string.IsNullOrWhiteSpace(app) ? null : app);
+                            cfg.AddEnvTag(string.IsNullOrWhiteSpace(env) ? null : env);
+                            cfg.AddServerTag(string.IsNullOrWhiteSpace(server) ? null : server);
+                            foreach (var tag in tags)
+                            {
+                                if (!cfg.GlobalTags.ContainsKey(tag.Key))
+                                {
+                                    cfg.GlobalTags.Add(tag.Key, tag.Value);
+                                }
+                            }
+                        }
+                    );
+
+                    if (metricsOptions.InfluxEnabled)
+                    {
+                        builder.Report.ToInfluxDb(o =>
+                        {
+                            o.InfluxDb.Database = metricsOptions.Database;
+                            o.InfluxDb.BaseUri = new Uri(metricsOptions.InfluxUrl);
+                            o.InfluxDb.CreateDataBaseIfNotExists = true;
+                            o.FlushInterval = TimeSpan.FromSeconds(metricsOptions.Interval);
+                        });
+                    }
+                })
                 .UseHealth()
                 .UseHealthEndpoints()
                 .UseMetricsWebTracking()
-                .UseMetricsEndpoints((context, setup) =>
+                .UseMetrics((context, options) =>
                 {
-                    var options = context.Configuration.GetOptions<MetricsOptions>("metrics");
-                    if (options.PrometheusEnabled)
+                    var metricsOptions = context.Configuration.GetOptions<MetricsOptions>("metrics");
+                    if (!metricsOptions.Enabled)
                     {
-                        setup.MetricsTextEndpointOutputFormatter = new MetricsPrometheusTextOutputFormatter();
-                        setup.MetricsEndpointOutputFormatter = new MetricsPrometheusProtobufOutputFormatter();
+                        return;
                     }
-                })
-                .UseMetrics();
+
+                    if (metricsOptions.PrometheusEnabled)
+                    {
+                        options.EndpointOptions = endpointOptions =>
+                        {
+                            endpointOptions.MetricsTextEndpointOutputFormatter =
+                                new MetricsPrometheusTextOutputFormatter();
+                            endpointOptions.MetricsEndpointOutputFormatter =
+                                new MetricsPrometheusProtobufOutputFormatter();
+                        };
+                    }
+                });
     }
 }

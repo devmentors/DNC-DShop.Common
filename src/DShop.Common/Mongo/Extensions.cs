@@ -1,8 +1,6 @@
-using System;
 using Autofac;
 using DShop.Common.Types;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 
 namespace DShop.Common.Mongo

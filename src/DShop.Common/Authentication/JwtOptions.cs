@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace DShop.Common.Authentication
 {
     public class JwtOptions

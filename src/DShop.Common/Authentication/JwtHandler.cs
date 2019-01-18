@@ -39,8 +39,7 @@ namespace DShop.Common.Authentication
             };
         }
 
-        public JsonWebToken CreateToken(string userId, string role = null,
-            IDictionary<string, string> claims = null)
+        public JsonWebToken CreateToken(string userId, string role = null, IDictionary<string, string> claims = null)
         {
             if (string.IsNullOrWhiteSpace(userId))
             {
@@ -59,8 +58,9 @@ namespace DShop.Common.Authentication
             {
                 jwtClaims.Add(new Claim(ClaimTypes.Role, role));
             }
-            var customClaims = claims?.Select(claim => new Claim(claim.Key, claim.Value))
-                               ?? Enumerable.Empty<Claim>();
+
+            var customClaims = claims?.Select(claim => new Claim(claim.Key, claim.Value)).ToArray()
+                               ?? Array.Empty<Claim>();
             jwtClaims.AddRange(customClaims);
             var expires = now.AddMinutes(_options.ExpiryMinutes);
             var jwt = new JwtSecurityToken(
@@ -77,6 +77,7 @@ namespace DShop.Common.Authentication
                 AccessToken = token,
                 RefreshToken = string.Empty,
                 Expires = expires.ToTimestamp(),
+                Id = userId,
                 Role = role ?? string.Empty,
                 Claims = customClaims.ToDictionary(c => c.Type, c => c.Value)
             };

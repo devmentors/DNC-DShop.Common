@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace DShop.Common.Metrics
 {
     public class MetricsOptions
@@ -7,7 +9,7 @@ namespace DShop.Common.Metrics
         public bool PrometheusEnabled { get; set; }
         public string InfluxUrl { get; set; }
         public string Database { get; set; }
-        public string Env { get; set; }
         public int Interval { get; set; }
+        public IDictionary<string, string> Tags { get; set; }
     }
 }
