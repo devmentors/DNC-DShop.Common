@@ -65,16 +65,26 @@ namespace DShop.Common.Metrics
                         return;
                     }
 
-                    if (metricsOptions.PrometheusEnabled)
+                    if (!metricsOptions.PrometheusEnabled)
                     {
-                        options.EndpointOptions = endpointOptions =>
-                        {
-                            endpointOptions.MetricsTextEndpointOutputFormatter =
-                                new MetricsPrometheusTextOutputFormatter();
-                            endpointOptions.MetricsEndpointOutputFormatter =
-                                new MetricsPrometheusProtobufOutputFormatter();
-                        };
+                        return;
                     }
+
+                    options.EndpointOptions = endpointOptions =>
+                    {
+                        switch (metricsOptions.PrometheusFormatter?.ToLowerInvariant() ?? string.Empty)
+                        {
+                            case "protobuf":
+                                endpointOptions.MetricsEndpointOutputFormatter =
+                                    new MetricsPrometheusProtobufOutputFormatter();
+                                break;
+                            default:
+                                endpointOptions.MetricsEndpointOutputFormatter =
+                                    new MetricsPrometheusTextOutputFormatter();
+                                break;
+                        }
+                    };
+
                 });
     }
 }
