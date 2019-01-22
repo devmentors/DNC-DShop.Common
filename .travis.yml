@@ -1,8 +1,8 @@
 language: csharp
-dist: trusty
-sudo: required
 mono: none
-dotnet: 2.1.402
+sudo: required
+dist: xenial
+dotnet: 2.2
 branches:
   only:
     - master
