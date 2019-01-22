@@ -5,7 +5,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <Description>DShop Common</Description>
-    <VersionPrefix>2.0.0</VersionPrefix>
+    <VersionPrefix>2.0.1</VersionPrefix>
     <Authors>DevMentors.io</Authors>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>DShop.Common</AssemblyName>
