@@ -2,13 +2,13 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace DShop.Common.Consul
+namespace DShop.Common.Fabio
 {
-    public class ConsulHttpClient : IConsulHttpClient
+    public class FabioHttpClient : IFabioHttpClient
     {
         private readonly HttpClient _client;
 
-        public ConsulHttpClient(HttpClient client)
+        public FabioHttpClient(HttpClient client)
         {
             _client = client;
         }

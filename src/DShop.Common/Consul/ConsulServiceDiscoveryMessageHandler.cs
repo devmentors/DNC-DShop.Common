@@ -56,14 +56,21 @@ namespace DShop.Common.Consul
                     return await base.SendAsync(request, cancellationToken);
                 });
 
-        private async Task<Uri> GetRequestUriAsync(HttpRequestMessage request, 
+        private async Task<Uri> GetRequestUriAsync(HttpRequestMessage request,
             string serviceName, Uri uri)
         {
             var service = await _servicesRegistry.GetAsync(serviceName);
             if (service == null)
             {
-                throw new ConsulServiceNotFoundException($"Consul service: '{serviceName}' was not found.", 
+                throw new ConsulServiceNotFoundException($"Consul service: '{serviceName}' was not found.",
                     serviceName);
+            }
+
+            if (!_options.Value.SkipLocalhostDockerDnsReplace)
+            {
+                service.Address = service.Address.Replace("docker.for.mac.localhost", "localhost")
+                    .Replace("docker.for.win.localhost", "localhost")
+                    .Replace("host.docker.internal", "localhost");
             }
 
             var uriBuilder = new UriBuilder(uri)

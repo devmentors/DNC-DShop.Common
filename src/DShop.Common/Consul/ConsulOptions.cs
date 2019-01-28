@@ -12,5 +12,6 @@ namespace DShop.Common.Consul
         public int PingInterval { get; set; }
         public int RemoveAfterInterval { get; set; }
         public int RequestRetries { get; set; }
+        public bool SkipLocalhostDockerDnsReplace { get; set; }
     }
 }
