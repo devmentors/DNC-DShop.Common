@@ -22,7 +22,7 @@ namespace DShop.Common.Jaeger
                 return services;
             }
             
-            services.AddSingleton(sp =>
+            services.AddSingleton<ITracer>(sp =>
             {
                 var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 
