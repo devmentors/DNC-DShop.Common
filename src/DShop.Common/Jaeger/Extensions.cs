@@ -11,9 +11,9 @@ using OpenTracing.Util;
 
 namespace DShop.Common.Jaeger
 {
-public static class Extensions
+    public static class Extensions
     {
-        public static IServiceCollection AddJaegerTracer(this IServiceCollection services)
+        public static IServiceCollection AddJaeger(this IServiceCollection services)
         {
             var options = GetJaegerOptions(services);
 
