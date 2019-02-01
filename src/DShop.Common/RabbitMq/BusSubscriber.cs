@@ -7,6 +7,9 @@ using DShop.Common.Types;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MongoDB.Driver.Core.Misc;
+using OpenTracing;
+using OpenTracing.Tag;
 using Polly;
 using RawRabbit;
 using RawRabbit.Common;
@@ -18,7 +21,8 @@ namespace DShop.Common.RabbitMq
     {
         private readonly ILogger _logger;
         private readonly IBusClient _busClient;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceProvider _serviceProvider;        
+        private readonly ITracer _tracer;
         private readonly string _defaultNamespace;
         private readonly int _retries;
         private readonly int _retryInterval;
@@ -28,6 +32,7 @@ namespace DShop.Common.RabbitMq
             _logger = app.ApplicationServices.GetService<ILogger<BusSubscriber>>();
             _serviceProvider = app.ApplicationServices.GetService<IServiceProvider>();
             _busClient = _serviceProvider.GetService<IBusClient>();
+            _tracer = _serviceProvider.GetService<ITracer>();
             var options = _serviceProvider.GetService<RabbitMqOptions>();
             _defaultNamespace = options.Namespace;
             _retries = options.Retries >= 0 ? options.Retries : 3;
@@ -83,38 +88,59 @@ namespace DShop.Common.RabbitMq
 
             return await retryPolicy.ExecuteAsync<Acknowledgement>(async () =>
             {
-                try
+                var scope = _tracer
+                    .BuildSpan("executing-handler")
+                    .AsChildOf(_tracer.ActiveSpan)
+                    .StartActive(true);
+
+                using (scope)
                 {
-                    var retryMessage = currentRetry == 0
-                        ? string.Empty
-                        : $"Retry: {currentRetry}'.";
-                    _logger.LogInformation($"Handling a message: '{messageName}' " +
-                                           $"with correlation id: '{correlationContext.Id}'. {retryMessage}");
-
-                    await handle();
-
-                    _logger.LogInformation($"Handled a message: '{messageName}' " +
-                                           $"with correlation id: '{correlationContext.Id}'. {retryMessage}");
-
-                    return new Ack();
-                }
-                catch (Exception exception)
-                {
-                    currentRetry++;
-                    _logger.LogError(exception, exception.Message);
-                    if (exception is DShopException dShopException && onError != null)
+                    var span = scope.Span;
+                    
+                    try
                     {
-                        var rejectedEvent = onError(message, dShopException);
-                        await _busClient.PublishAsync(rejectedEvent, ctx => ctx.UseMessageContext(correlationContext));
-                        _logger.LogInformation($"Published a rejected event: '{rejectedEvent.GetType().Name}' " +
-                                               $"for the message: '{messageName}' with correlation id: '{correlationContext.Id}'.");
+                        var retryMessage = currentRetry == 0
+                            ? string.Empty
+                            : $"Retry: {currentRetry}'.";
+
+                        var preLogMessage = $"Handling a message: '{messageName}' " +
+                                      $"with correlation id: '{correlationContext.Id}'. {retryMessage}";
+                        
+                        _logger.LogInformation(preLogMessage);
+                        span.Log(preLogMessage);
+
+                        await handle();
+
+                        var postLogMessage = $"Handled a message: '{messageName}' " +
+                                             $"with correlation id: '{correlationContext.Id}'. {retryMessage}";
+                        _logger.LogInformation(postLogMessage);
+                        span.Log(postLogMessage);
 
                         return new Ack();
                     }
+                    catch (Exception exception)
+                    {
+                        currentRetry++;
+                        _logger.LogError(exception, exception.Message);
+                        span.Log(exception.Message);
+                        span.SetTag(Tags.Error, true);
+                        
+                        if (exception is DShopException dShopException && onError != null)
+                        {
+                            var rejectedEvent = onError(message, dShopException);
+                            await _busClient.PublishAsync(rejectedEvent, ctx => ctx.UseMessageContext(correlationContext));
+                            _logger.LogInformation($"Published a rejected event: '{rejectedEvent.GetType().Name}' " +
+                                                   $"for the message: '{messageName}' with correlation id: '{correlationContext.Id}'.");
 
-                    throw new Exception($"Unable to handle a message: '{messageName}' " +
-                                        $"with correlation id: '{correlationContext.Id}', " +
-                                        $"retry {currentRetry - 1}/{_retries}...");
+                            span.SetTag("error-type", "domain");
+                            return new Ack();
+                        }
+
+                        span.SetTag("error-type", "infrastructure");
+                        throw new Exception($"Unable to handle a message: '{messageName}' " +
+                                            $"with correlation id: '{correlationContext.Id}', " +
+                                            $"retry {currentRetry - 1}/{_retries}...");
+                    }
                 }
             });
         }

@@ -4,9 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using DShop.Common.Handlers;
+using DShop.Common.Jaeger;
 using DShop.Common.Messages;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using OpenTracing;
 using RawRabbit;
 using RawRabbit.Common;
 using RawRabbit.Configuration;
@@ -62,6 +64,7 @@ namespace DShop.Common.RabbitMq
                 var options = context.Resolve<RabbitMqOptions>();
                 var configuration = context.Resolve<RawRabbitConfiguration>();
                 var namingConventions = new CustomNamingConventions(options.Namespace);
+                var tracer = context.Resolve<ITracer>();
 
                 return RawRabbitFactory.CreateInstanceFactory(new RawRabbitOptions
                 {
@@ -70,6 +73,7 @@ namespace DShop.Common.RabbitMq
                         ioc.AddSingleton(options);
                         ioc.AddSingleton(configuration);
                         ioc.AddSingleton<INamingConventions>(namingConventions);
+                        ioc.AddSingleton(tracer);
                     },
                     Plugins = p => p
                         .UseAttributeRouting()
@@ -77,6 +81,7 @@ namespace DShop.Common.RabbitMq
                         .UpdateRetryInfo()
                         .UseMessageContext<CorrelationContext>()
                         .UseContextForwarding()
+                        .UseJaeger(tracer)
                 });
             }).SingleInstance();
             builder.Register(context => context.Resolve<IInstanceFactory>().Create());

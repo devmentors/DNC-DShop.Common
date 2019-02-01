@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OpenTracing;
 using OpenTracing.Util;
+using RawRabbit.Instantiation;
+using RawRabbit.Pipe;
+using Serilog.Core;
 
 namespace DShop.Common.Jaeger
 {
@@ -45,6 +48,13 @@ namespace DShop.Common.Jaeger
             });
 
             return services;
+        }
+        
+        public static IClientBuilder UseJaeger(this IClientBuilder builder, ITracer tracer)
+        {
+            builder.Register(pipe => pipe
+                .Use<JaegerStagedMiddleware>(tracer));
+            return builder;
         }
 
         private static JaegerOptions GetJaegerOptions(IServiceCollection services)
