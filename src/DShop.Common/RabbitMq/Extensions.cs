@@ -6,6 +6,7 @@ using Autofac;
 using DShop.Common.Handlers;
 using DShop.Common.Jaeger;
 using DShop.Common.Messages;
+using Jaeger.Thrift.Agent;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using OpenTracing;
@@ -53,7 +54,10 @@ namespace DShop.Common.RabbitMq
                 .InstancePerDependency();
             builder.RegisterType<BusPublisher>().As<IBusPublisher>()
                 .InstancePerDependency();
-
+//            builder.Register(context => 
+//                context.IsRegistered<ITracer>() ? context.Resolve<ITracer>() : DShopDefaultTracer.Create()).SingleInstance();
+//            
+            
             ConfigureBus(builder);
         }
 

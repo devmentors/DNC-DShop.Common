@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using Jaeger;
 using Jaeger.Reporters;
 using Jaeger.Samplers;
@@ -22,6 +23,8 @@ namespace DShop.Common.Jaeger
 
             if (!options.Enabled)
             {
+                var defaultTracer = DShopDefaultTracer.Create();
+                services.AddSingleton(defaultTracer);
                 return services;
             }
             
@@ -76,16 +79,6 @@ namespace DShop.Common.Jaeger
                 case "probabilistic": return new ProbabilisticSampler(options.SamplingRate);
                 default: return new ConstSampler(true);
             }
-        }
-
-        private static ITracer ConfigureTracer(Action<Tracer.Builder> optionBuilder)
-        {
-            var appName = System.Reflection.Assembly.GetEntryAssembly().FullName;
-            var tracerBuilder = new Tracer.Builder(appName);
-            optionBuilder(tracerBuilder);
-            var tracer = tracerBuilder.Build();
-            GlobalTracer.Register(tracer);
-            return tracer;
         }
     }
 }
