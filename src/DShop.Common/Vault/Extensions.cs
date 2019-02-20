@@ -41,7 +41,8 @@ namespace DShop.Common.Vault
             VaultOptions options, string key)
         {
             var client = new VaultStore(options);
-            var secret = string.IsNullOrWhiteSpace(key) ? client.GetDefaultAsync().Result : client.GetAsync(key).Result;
+            var secret = string.IsNullOrWhiteSpace(key) 
+                ? client.GetDefaultAsync().GetAwaiter().GetResult() : client.GetAsync(key).GetAwaiter().GetResult();
             var parser = new JsonParser();
             var data = parser.Parse(JObject.FromObject(secret));
             var source = new MemoryConfigurationSource {InitialData = data};
