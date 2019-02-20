@@ -54,10 +54,9 @@ namespace DShop.Common.RabbitMq
                 .InstancePerDependency();
             builder.RegisterType<BusPublisher>().As<IBusPublisher>()
                 .InstancePerDependency();
-//            builder.Register(context => 
-//                context.IsRegistered<ITracer>() ? context.Resolve<ITracer>() : DShopDefaultTracer.Create()).SingleInstance();
-//            
-            
+            builder.RegisterInstance(DShopDefaultTracer.Create()).As<ITracer>().SingleInstance()
+                .PreserveExistingDefaults();
+
             ConfigureBus(builder);
         }
 

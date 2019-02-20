@@ -26,10 +26,9 @@ namespace DShop.Common.Jaeger
         public override Task InvokeAsync(IPipeContext context, CancellationToken token = new CancellationToken())
         {
             var correlationContext = (ICorrelationContext) context.GetMessageContext();
-            var spanContext = SpanContext.ContextFromString(correlationContext.SpanContext);
             var messageType = context.GetMessageType();
 
-            using (var scope = BuildScope(spanContext, messageType))
+            using (var scope = BuildScope(messageType, correlationContext.SpanContext))
             {
                 var span = scope.Span;
                 span.Log($"Processing {messageType.Name}");
@@ -48,11 +47,22 @@ namespace DShop.Common.Jaeger
             return Next.Next.InvokeAsync(context, token);
         }
 
-        private IScope BuildScope(ISpanContext spanContext, Type messageType)
-            => _tracer
+        private IScope BuildScope(Type messageType, string serializedSpanContext)
+        {
+            var spanBuilder = _tracer
                 .BuildSpan($"processing-{messageType.Name}")
-                .WithTag("message-type", $@"{(messageType.IsAssignableTo<ICommand>()? "command" : "event" )}")
+                .WithTag("message-type", $@"{(messageType.IsAssignableTo<ICommand>()? "command" : "event" )}");
+
+            if (string.IsNullOrEmpty(serializedSpanContext))
+            {
+                return spanBuilder.StartActive(true);
+            }
+
+            var spanContext = SpanContext.ContextFromString(serializedSpanContext);
+            
+            return spanBuilder
                 .AddReference(References.FollowsFrom, spanContext)
                 .StartActive(true);
+        }
     }
 }
