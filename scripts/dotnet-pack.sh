@@ -3,7 +3,7 @@ echo Executing after success scripts on branch $TRAVIS_BRANCH
 echo Triggering MyGet package build
 
 cd src/DShop.Common
-dotnet pack /p:PackageVersion=1.0.$TRAVIS_BUILD_NUMBER --no-restore -o .
+dotnet pack /p:PackageVersion=2.0.$TRAVIS_BUILD_NUMBER --no-restore -o .
 
 echo Uploading DShop.Common package to MyGet using branch $TRAVIS_BRANCH
 
