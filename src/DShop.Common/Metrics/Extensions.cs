@@ -9,8 +9,16 @@ namespace DShop.Common.Metrics
 {
     public static class Extensions
     {
+        private static bool _initialized;
+
         public static IWebHostBuilder UseAppMetrics(this IWebHostBuilder webHostBuilder)
-            => webHostBuilder
+        {
+            if (_initialized)
+            {
+                return webHostBuilder;
+            }
+
+            return webHostBuilder
                 .ConfigureMetricsWithDefaults((context, builder) =>
                 {
                     var metricsOptions = context.Configuration.GetOptions<MetricsOptions>("metrics");
@@ -19,6 +27,7 @@ namespace DShop.Common.Metrics
                         return;
                     }
 
+                    _initialized = true;
                     builder.Configuration.Configure(cfg =>
                         {
                             var tags = metricsOptions.Tags;
@@ -86,5 +95,6 @@ namespace DShop.Common.Metrics
                     };
 
                 });
+        }
     }
 }

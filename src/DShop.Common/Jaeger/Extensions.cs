@@ -10,15 +10,21 @@ using Microsoft.Extensions.Logging;
 using OpenTracing;
 using OpenTracing.Util;
 using RawRabbit.Instantiation;
-using RawRabbit.Pipe;
-using Serilog.Core;
 
 namespace DShop.Common.Jaeger
 {
     public static class Extensions
     {
+        private static bool _initialized;
+
         public static IServiceCollection AddJaeger(this IServiceCollection services)
         {
+            if (_initialized)
+            {
+                return services;
+            }
+
+            _initialized = true;
             var options = GetJaegerOptions(services);
 
             if (!options.Enabled)
@@ -27,32 +33,33 @@ namespace DShop.Common.Jaeger
                 services.AddSingleton(defaultTracer);
                 return services;
             }
-            
+
             services.AddSingleton<ITracer>(sp =>
             {
                 var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 
                 var reporter = new RemoteReporter
-                    .Builder()
+                        .Builder()
                     .WithSender(new UdpSender(options.UdpHost, options.UdpPort, options.MaxPacketSize))
                     .WithLoggerFactory(loggerFactory)
                     .Build();
 
                 var sampler = GetSampler(options);
-                
+
                 var tracer = new Tracer
-                    .Builder(options.ServiceName)
+                        .Builder(options.ServiceName)
                     .WithReporter(reporter)
                     .WithSampler(sampler)
                     .Build();
-                
+
                 GlobalTracer.Register(tracer);
+
                 return tracer;
             });
 
             return services;
         }
-        
+
         public static IClientBuilder UseJaeger(this IClientBuilder builder, ITracer tracer)
         {
             builder.Register(pipe => pipe
