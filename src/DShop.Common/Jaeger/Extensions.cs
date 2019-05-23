@@ -1,5 +1,3 @@
-using System;
-using System.Reflection;
 using Jaeger;
 using Jaeger.Reporters;
 using Jaeger.Samplers;

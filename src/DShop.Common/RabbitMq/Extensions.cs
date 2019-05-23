@@ -6,7 +6,6 @@ using Autofac;
 using DShop.Common.Handlers;
 using DShop.Common.Jaeger;
 using DShop.Common.Messages;
-using Jaeger.Thrift.Agent;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using OpenTracing;
@@ -94,9 +93,11 @@ namespace DShop.Common.RabbitMq
         {
             public CustomNamingConventions(string defaultNamespace)
             {
+                var assemblyName = Assembly.GetEntryAssembly().GetName().Name;
                 ExchangeNamingConvention = type => GetNamespace(type, defaultNamespace).ToLowerInvariant();
                 RoutingKeyConvention = type =>
-                    $"#.{GetRoutingKeyNamespace(type, defaultNamespace)}{type.Name.Underscore()}".ToLowerInvariant();
+                    $"{GetRoutingKeyNamespace(type, defaultNamespace)}{type.Name.Underscore()}".ToLowerInvariant();
+                QueueNamingConvention = type => GetQueueName(assemblyName, type, defaultNamespace);
                 ErrorExchangeNamingConvention = () => $"{defaultNamespace}.error";
                 RetryLaterExchangeConvention = span => $"{defaultNamespace}.retry";
                 RetryLaterQueueNameConvetion = (exchange, span) =>
@@ -114,7 +115,15 @@ namespace DShop.Common.RabbitMq
             {
                 var @namespace = type.GetCustomAttribute<MessageNamespaceAttribute>()?.Namespace ?? defaultNamespace;
 
-                return string.IsNullOrWhiteSpace(@namespace) ? "#" : $"{@namespace}";
+                return string.IsNullOrWhiteSpace(@namespace) ? type.Name.Underscore() : $"{@namespace}";
+            }
+
+            private static string GetQueueName(string assemblyName, Type type, string defaultNamespace)
+            {
+                var @namespace = type.GetCustomAttribute<MessageNamespaceAttribute>()?.Namespace ?? defaultNamespace;
+                var separatedNamespace = string.IsNullOrWhiteSpace(@namespace) ? string.Empty : $"{@namespace}.";
+
+                return $"{assemblyName}/{separatedNamespace}{type.Name.Underscore()}".ToLowerInvariant();
             }
         }
 
