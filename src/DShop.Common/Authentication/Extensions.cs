@@ -34,7 +34,8 @@ namespace DShop.Common.Authentication
                         ValidIssuer = options.Issuer,
                         ValidAudience = options.ValidAudience,
                         ValidateAudience = options.ValidateAudience,
-                        ValidateLifetime = options.ValidateLifetime
+                        ValidateLifetime = options.ValidateLifetime,
+                        ClockSkew = TimeSpan.Zero
                     };
                 });
         }

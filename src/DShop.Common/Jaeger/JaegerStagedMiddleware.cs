@@ -22,7 +22,7 @@ namespace DShop.Common.Jaeger
         public override string StageMarker => RawRabbit.Pipe.StageMarker.MessageDeserialized;
         
         
-        public override Task InvokeAsync(IPipeContext context, CancellationToken token = new CancellationToken())
+        public override async Task InvokeAsync(IPipeContext context, CancellationToken token = new CancellationToken())
         {
             var correlationContext = (ICorrelationContext) context.GetMessageContext();
             var messageType = context.GetMessageType();
@@ -34,7 +34,7 @@ namespace DShop.Common.Jaeger
 
                 try
                 {
-                    return Next.InvokeAsync(context, token);
+                    await Next.InvokeAsync(context, token);
                 }
                 catch(Exception ex)
                 {
@@ -42,8 +42,6 @@ namespace DShop.Common.Jaeger
                     span.Log(ex.Message);
                 }
             }
-
-            return Next.Next.InvokeAsync(context, token);
         }
 
         private IScope BuildScope(Type messageType, string serializedSpanContext)
