@@ -45,7 +45,7 @@ namespace DShop.Common.Mvc
                     message = e.Message;
                     break;
             }
-            var response = new { code = errorCode, message = exception.Message };
+            var response = new { code = errorCode, message = message };
             var payload = JsonConvert.SerializeObject(response);
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
